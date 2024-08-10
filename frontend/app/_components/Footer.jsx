@@ -9,7 +9,7 @@ function Footer() {
       <div className="flex justify-center text-teal-600 sm:justify-start">
       <Link className="flex items-center text-primary" href="/">
           <img
-            src="./mint-logo.png"
+            src="./mania-logo.png"
             alt="mint-mania-logo"
             className="w-9"
           />

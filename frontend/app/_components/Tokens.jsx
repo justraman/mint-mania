@@ -1,12 +1,11 @@
 import React from "react";
 
-
 const tokens = Array.from({ length: 20 }, (v, i) => ({
   id: i + 1,
-  name: `Token ${i + 1}`,
+  name: `Tokenht ${i + 1}`,
   symbol: `SYM${i + 1}`,
   price: `$${(Math.random() * 100).toFixed(2)}`,
-  image: "/mint-logo.png",
+  image: "/mania-logo.png",
 }));
 
 export default function Tokens() {
@@ -32,10 +31,10 @@ export default function Tokens() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <h3 className="mt-0.5 text-2xl font-medium text-white text-center">
+                <h3 className="mt-0.5 text-2xl font-medium text-white text-center break-words">
                   {token.name}
                 </h3>
-                <h3 className="mt-0.5 text-2xl font-medium text-blue-500 text-center">
+                <h3 className="mt-0.5 text-2xl font-medium text-blue-500 text-center break-words">
                   {token.symbol}
                 </h3>
                 <h3 className="mt-0.5 text-2xl font-medium text-green-500 text-center">
