@@ -109,7 +109,7 @@ export default function Header() {
       {isWalletModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 m-4">
           <div className="w-full max-w-xl bg-black p-6 border border-solid border-primary shadow-2xl relative">
-            <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%] md:-right-2 md:w-[102%] xs:h-[102%] bg-white" />
+            <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%] md:-right-2 md:w-[102%] xs:h-[102%] bg-white lg:-right-4" />
             <h2 className="text-4xl font-bold mb-4 text-center text-white">Connect Wallet</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto h-64 scrollbar-hide">
               {wallets.map((wallet) => (
