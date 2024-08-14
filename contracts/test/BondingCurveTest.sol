@@ -12,10 +12,12 @@ contract BondingCurve is Test {
     }
 
     function test_PurchaseToken() public {
-       uint256 data = banchor.calculatePurchaseReturn(800_000_000, 69000_000_000, 300000, 26000);
+       uint256 data = banchor.calculateSaleReturn(100_054987, 1000_000_000, 550000, 1);
        console.logUint(data);
 
     }
+
+    // 54987
 
 }
 

@@ -16,3 +16,15 @@ name = "@prb-math"
 version = "4.0.3"
 source = "https://soldeer-revisions.s3.amazonaws.com/@prb-math/4_0_3_16-06-2024_05:46:20_math.zip"
 checksum = "adb64170354454d3acefa986481f7231af28a329a81484bf96e59523a831960c"
+
+[[dependencies]]
+name = "@uniswap-v3-core"
+version = "1.0.2-solc-0.8-simulate"
+source = "https://soldeer-revisions.s3.amazonaws.com/@uniswap-v3-core/1_0_2-solc-0_8-simulate_22-01-2024_13:19:54_v3-core.zip"
+checksum = "68949c67a4f22044e4c8dc716362b6d79b07e8990e720bec9b116f54b233ef57"
+
+[[dependencies]]
+name = "@uniswap-v3-periphery"
+version = "1.4.4"
+source = "https://soldeer-revisions.s3.amazonaws.com/@uniswap-v3-periphery/1_4_4_22-01-2024_13:20:51_v3-periphery.zip"
+checksum = "f1ce151585a084bb3ec6fb9cbce4520924d41398c3ce8979169de6f7f70d6a81"

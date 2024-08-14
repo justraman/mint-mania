@@ -9,3 +9,5 @@ libs = ["lib"]
 "@uniswap-v2-core" = "1.0.1"
 "@openzeppelin-contracts" = "5.0.2"
 "@prb-math" = "4.0.3"
+"@uniswap-v3-core" = "1.0.2-solc-0.8-simulate"
+"@uniswap-v3-periphery" = "1.4.4"
