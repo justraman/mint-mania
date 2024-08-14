@@ -111,6 +111,7 @@ contract MintMania is Ownable, Pausable {
         );
 
         require(Token(token).burn(msg.sender, amountToken) == true);
+        require(stableToken.transfer(msg.sender, amount) == true);
         usdtSuplly[token] -= amount;
 
         emit TokenSold(token, msg.sender, amount, getPrice(token));
