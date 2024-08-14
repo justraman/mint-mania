@@ -1,13 +1,11 @@
+"use client";
 import React from "react";
-import TradingViewChart from "./TradingViewChart";
-import TradeBox from "./TradeBox";
+import TradingViewChart from "../TradingViewChart";
+import TradeBox from "../TradeBox";
 
-function App() {
+function TokenDetail({ params }: { params: { address: string } }) {
   return (
-    <section
-      className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
-      id="services"
-    >
+    <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
         <div className=" lg:col-span-2">
           <div className="w-full border border-solid border-primary bg-black   shadow-2xl relative">
@@ -16,12 +14,11 @@ function App() {
           </div>
         </div>
         <div>
-          
-            <TradeBox />
+          <TradeBox />
         </div>
       </div>
     </section>
   );
 }
 
-export default App;
+export default TokenDetail;

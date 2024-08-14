@@ -3,7 +3,7 @@ import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 import Head from "next/head";
 
-const metadata = {
+export const metadata = {
   title: "Mint Mania",
   description: "Mint Mania",
 };
