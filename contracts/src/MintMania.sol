@@ -17,7 +17,6 @@ struct TokenInfo {
 contract MintMania is Ownable, Pausable {
     uint256 public constant MAX_SUPPLY = 1000_000_000; // 1 billion
     uint256 public constant INITIAL_SUPPLY = 200_000_000; // 20 million (20% of max supply)
-    uint256 public constant INITAL_PRICE = 1;
     uint256 public constant INITIAL_COLLATORAL = 1000_000_000; // 1k usdt
     uint32 private constant RR = 350000; // part per milliom
 
@@ -179,29 +178,6 @@ contract MintMania is Ownable, Pausable {
             tokens[token].launched
         );
     }
-
-   /*  function addLiquidity(address token) private {
-        Token(token).approve(
-            address(nonfungiblePositionManager),
-            INITIAL_SUPPLY
-        );
-        stableToken.approve(address(nonfungiblePositionManager), usdtAmount);
-
-        INonfungiblePositionManager.MintParams
-            memory params = INonfungiblePositionManager.MintParams({
-                token0: DAI,
-                token1: USDC,
-                fee: poolFee,
-                tickLower: TickMath.MIN_TICK,
-                tickUpper: TickMath.MAX_TICK,
-                amount0Desired: amount0ToMint,
-                amount1Desired: amount1ToMint,
-                amount0Min: 0,
-                amount1Min: 0,
-                recipient: address(this),
-                deadline: block.timestamp
-            });
-    } */
 
     function pause() external onlyOwner {
         _pause();

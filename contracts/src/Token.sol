@@ -28,12 +28,12 @@ contract Token is ERC20, ERC20Capped, ERC20Burnable, Ownable {
         ERC20Capped._update(from, to, value);
     }
 
-    function mint(address to, uint256 value) onlyOwner public returns (bool) {
+    function mint(address to, uint256 value) public onlyOwner returns (bool) {
         _update(address(0), to, value);
         return true;
     }
 
-    function burn (address from, uint256 value) public onlyOwner returns (bool) {
+    function burn(address from, uint256 value) public onlyOwner returns (bool) {
         _burn(from, value);
         return true;
     }

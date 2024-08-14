@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import "./Utils.sol";
@@ -15,25 +15,13 @@ contract BancorBondingCurve is Utils {
     uint8 private constant MIN_PRECISION = 32;
     uint8 private constant MAX_PRECISION = 127;
 
-    /**
-        The values below depend on MAX_PRECISION. If you choose to change it:
-        Apply the same change in file 'PrintIntScalingFactors.py', run it and paste the results below.
-    */
     uint256 private constant FIXED_1 = 0x080000000000000000000000000000000;
     uint256 private constant FIXED_2 = 0x100000000000000000000000000000000;
     uint256 private constant MAX_NUM = 0x1ffffffffffffffffffffffffffffffff;
 
-    /**
-        The values below depend on MAX_PRECISION. If you choose to change it:
-        Apply the same change in file 'PrintLn2ScalingFactors.py', run it and paste the results below.
-    */
     uint256 private constant LN2_MANTISSA = 0x2c5c85fdf473de6af278ece600fcbda;
     uint8 private constant LN2_EXPONENT = 122;
 
-    /**
-        The values below depend on MIN_PRECISION and MAX_PRECISION. If you choose to change either one of them:
-        Apply the same change in file 'PrintFunctionBancorFormula.py', run it and paste the results below.
-    */
     uint256[128] private maxExpArray;
 
     constructor() {
@@ -135,20 +123,6 @@ contract BancorBondingCurve is Utils {
         maxExpArray[127] = 0x00857ddf0117efa215952912839f6473e6;
     }
 
-    /**
-        @dev given a token supply, connector balance, weight and a deposit amount (in the connector token),
-        calculates the return for a given conversion (in the main token)
-
-        Formula:
-        Return = _supply * ((1 + _depositAmount / _connectorBalance) ^ (_connectorWeight / 1000000) - 1)
-
-        @param _supply              token total supply
-        @param _connectorBalance    total connector balance
-        @param _connectorWeight     connector weight, represented in ppm, 1-1000000
-        @param _depositAmount       deposit amount, in connector token
-
-        @return purchase return amount
-    */
     function calculatePurchaseReturn(
         uint256 _supply,
         uint256 _connectorBalance,
@@ -183,20 +157,6 @@ contract BancorBondingCurve is Utils {
         return temp - _supply;
     }
 
-    /**
-        @dev given a token supply, connector balance, weight and a sell amount (in the main token),
-        calculates the return for a given conversion (in the connector token)
-
-        Formula:
-        Return = _connectorBalance * (1 - (1 - _sellAmount / _supply) ^ (1 / (_connectorWeight / 1000000)))
-
-        @param _supply              token total supply
-        @param _connectorBalance    total connector
-        @param _connectorWeight     constant connector Weight, represented in ppm, 1-1000000
-        @param _sellAmount          sell amount, in the token itself
-
-        @return sale return amount
-    */
     function calculateSaleReturn(
         uint256 _supply,
         uint256 _connectorBalance,
@@ -236,22 +196,6 @@ contract BancorBondingCurve is Utils {
         return (temp1 - temp2) / result;
     }
 
-    /**
-        General Description:
-            Determine a value of precision.
-            Calculate an integer approximation of (_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision.
-            Return the result along with the precision used.
-
-        Detailed Description:
-            Instead of calculating "base ^ exp", we calculate "e ^ (ln(base) * exp)".
-            The value of "ln(base)" is represented with an integer slightly smaller than "ln(base) * 2 ^ precision".
-            The larger "precision" is, the more accurately this value represents the real value.
-            However, the larger "precision" is, the more bits are required in order to store this value.
-            And the exponentiation function, which takes "x" and calculates "e ^ x", is limited to a maximum exponent (maximum value of "x").
-            This maximum exponent depends on the "precision" used, and it is given by "maxExpArray[precision] >> (MAX_PRECISION - precision)".
-            Hence we need to determine the highest precision which can be used for the given input, before calling the exponentiation function.
-            This allows us to compute "base ^ exp" with maximum accuracy and without exceeding 256 bits in any of the intermediate computations.
-    */
     function power(
         uint256 _baseN,
         uint256 _baseD,
@@ -266,13 +210,6 @@ contract BancorBondingCurve is Utils {
         );
     }
 
-    /**
-        Return floor(ln(numerator / denominator) * 2 ^ MAX_PRECISION), where:
-        - The numerator   is a value between 1 and 2 ^ (256 - MAX_PRECISION) - 1
-        - The denominator is a value between 1 and 2 ^ (256 - MAX_PRECISION) - 1
-        - The output      is a value between 0 and floor(ln(2 ^ (256 - MAX_PRECISION) - 1) * 2 ^ MAX_PRECISION)
-        This functions assumes that the numerator is larger than or equal to the denominator, because the output would be negative otherwise.
-    */
     function ln(
         uint256 _numerator,
         uint256 _denominator
@@ -303,9 +240,6 @@ contract BancorBondingCurve is Utils {
         return (res * LN2_MANTISSA) >> LN2_EXPONENT;
     }
 
-    /**
-        Compute the largest integer smaller than or equal to the binary logarithm of the input.
-    */
     function floorLog2(uint256 _n) internal pure returns (uint8) {
         uint8 res = 0;
 
@@ -328,11 +262,6 @@ contract BancorBondingCurve is Utils {
         return res;
     }
 
-    /**
-        The global "maxExpArray" is sorted in descending order, and therefore the following statements are equivalent:
-        - This function finds the position of [the smallest value in "maxExpArray" larger than or equal to "x"]
-        - This function finds the highest position of [a value in "maxExpArray" larger than or equal to "x"]
-    */
     function findPositionInMaxExpArray(
         uint256 _x
     ) internal view returns (uint8) {
@@ -352,13 +281,6 @@ contract BancorBondingCurve is Utils {
         return 0;
     }
 
-    /**
-        This function can be auto-generated by the script 'PrintFunctionFixedExp.py'.
-        It approximates "e ^ x" via maclaurin summation: "(x^0)/0! + (x^1)/1! + ... + (x^n)/n!".
-        It returns "e ^ (x / 2 ^ precision) * 2 ^ precision", that is, the result is upshifted for accuracy.
-        The global "maxExpArray" maps each "precision" to "((maximumExponent + 1) << (MAX_PRECISION - precision)) - 1".
-        The maximum permitted value for "x" is therefore given by "maxExpArray[precision] >> (MAX_PRECISION - precision)".
-    */
     function fixedExp(
         uint256 _x,
         uint8 _precision
