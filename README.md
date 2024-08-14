@@ -7,9 +7,6 @@ MintMania lets you create and trade ERC20 tokens on the Base blockchain. Inspire
 
 Mint USDT at https://sepolia.basescan.org/token/0x323e78f944A9a1FcF3a10efcC5319DBb0bB6e673#readContract
 
-
-
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
