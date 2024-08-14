@@ -6,9 +6,6 @@ import "./BondingCurve.sol";
 import "@openzeppelin-contracts-5.0.2/access/Ownable.sol";
 import "@openzeppelin-contracts-5.0.2/utils/Pausable.sol";
 import "@openzeppelin-contracts-5.0.2/token/ERC20/IERC20.sol";
-import "@uniswap-v3-periphery-1.4.4/contracts/interfaces/INonfungiblePositionManager.sol";
-import "@uniswap-v3-periphery-1.4.4/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap-v3-core-1.0.2-solc-0.8-simulate/contracts/interfaces/IUniswapV3Factory.sol";
 
 struct TokenInfo {
     string name;
@@ -23,12 +20,6 @@ contract MintMania is Ownable, Pausable {
     uint256 public constant INITAL_PRICE = 1;
     uint256 public constant INITIAL_COLLATORAL = 1000_000_000; // 1k usdt
     uint32 private constant RR = 350000; // part per milliom
-    address private constant UNISWAP_V3_FACTORY_ADDRESS =
-        0x1F98431c8aD98523631AE4a59f267346ea31F984;
-    address private constant NONFUNGIBLE_POSITION_MANAGER_ADDRESS =
-        0xC36442b4a4522E871399CD717aBDD847Ab11FE88;
-    IUniswapV3Factory private uniswapV3Factory;
-    INonfungiblePositionManager private nonfungiblePositionManager;
 
     IERC20 public immutable stableToken;
     BancorBondingCurve public immutable bondingCurve;
@@ -37,14 +28,11 @@ contract MintMania is Ownable, Pausable {
     mapping(address => mapping(address => uint256)) private balances;
     mapping(address => uint256) private tokenEthBalance;
     mapping(address => uint256) private usdtSuplly;
+    address[] private total_tokens;
 
     constructor(address owner, address _usdt) Ownable(owner) {
         stableToken = IERC20(_usdt);
         bondingCurve = new BancorBondingCurve();
-        uniswapV3Factory = IUniswapV3Factory(UNISWAP_V3_FACTORY_ADDRESS);
-        nonfungiblePositionManager = INonfungiblePositionManager(
-            NONFUNGIBLE_POSITION_MANAGER_ADDRESS
-        );
     }
 
     event TokenCreated(address token, string name, string symbol);
@@ -72,6 +60,7 @@ contract MintMania is Ownable, Pausable {
 
         Token token = new Token(name, symbol, INITIAL_SUPPLY, MAX_SUPPLY);
         tokens[address(token)] = TokenInfo(name, symbol, uri, false);
+        total_tokens.push(address(token));
         usdtSuplly[address(token)] = INITIAL_COLLATORAL;
         emit TokenCreated(address(token), name, symbol);
     }
@@ -163,11 +152,34 @@ contract MintMania is Ownable, Pausable {
         require(tokens[token].launched == false, "Token is already launched");
 
         // integrate dex
+        // add liquidity
 
         tokens[token].launched = true;
     }
 
-    function addLiquidity(address token) private {
+    function getTokens() external view returns (address[] memory) {
+        return total_tokens;
+    }
+
+    function getToken(address token)
+        external
+        view
+        returns (
+            string memory,
+            string memory,
+            string memory,
+            bool
+        )
+    {
+        return (
+            tokens[token].name,
+            tokens[token].symbol,
+            tokens[token].uri,
+            tokens[token].launched
+        );
+    }
+
+   /*  function addLiquidity(address token) private {
         Token(token).approve(
             address(nonfungiblePositionManager),
             INITIAL_SUPPLY
@@ -188,7 +200,7 @@ contract MintMania is Ownable, Pausable {
                 recipient: address(this),
                 deadline: block.timestamp
             });
-    }
+    } */
 
     function pause() external onlyOwner {
         _pause();
