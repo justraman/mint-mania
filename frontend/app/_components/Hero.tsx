@@ -20,10 +20,7 @@ export default function Hero() {
     console.log("Token Symbol:", tokenSymbol);
   };
   return (
-    <section
-      className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
-      id="services"
-    >
+    <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
       <div
         className="grid grid-cols-1 
         sm:grid-cols-1 md:grid-cols-2
@@ -36,18 +33,10 @@ export default function Hero() {
 
           <div className="flex justify-center">
             <label className="relative cursor-pointer">
-              <input
-                type="file"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                onChange={handleImageUpload}
-              />
+              <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleImageUpload} />
               <div className="w-36 h-36 bg-gray-200 flex items-center justify-center overflow-hidden">
                 {image ? (
-                  <img
-                    src={image}
-                    alt="Uploaded"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={image} alt="Uploaded" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-gray-500 text-lg">Upload Image</span>
                 )}
@@ -57,29 +46,16 @@ export default function Hero() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <label className="block">
-              <Input
-                className="text-green-900 text-xl"
-                type="text"
-                placeholder="Token Name"
-              />
+              <Input className="text-green-900 text-xl" type="text" placeholder="Token Name" />
             </label>
 
             <label className="block">
-              <Input
-                className="text-green-900 text-xl"
-                type="text"
-                placeholder="Token Symbol"
-              />
+              <Input className="text-green-900 text-xl" type="text" placeholder="Token Symbol" />
             </label>
 
             <button
               type="submit"
-              className="p-2 px-3 border-[1px] border-primary
-    text-primary w-full text-center
-    mt-2
-    text-lg
-    cursor-pointer 
-    hover:bg-primary hover:text-green-900"
+              className="p-2 px-3 border-[1px] border-primary text-primary w-full text-center mt-2 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
             >
               Create Token
             </button>

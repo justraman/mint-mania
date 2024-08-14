@@ -1,6 +1,0 @@
-
-[[dependencies]]
-name = "@prb-math"
-version = "4.0.3"
-source = "https://soldeer-revisions.s3.amazonaws.com/@prb-math/4_0_3_16-06-2024_05:46:20_math.zip"
-checksum = "adb64170354454d3acefa986481f7231af28a329a81484bf96e59523a831960c"

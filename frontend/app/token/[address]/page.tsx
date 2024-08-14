@@ -10,7 +10,7 @@ function TokenDetail({ params }: { params: { address: string } }) {
         <div className=" lg:col-span-2">
           <div className="w-full border border-solid border-primary bg-black   shadow-2xl relative">
             <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%]  md:-right-3 md:w-[102%] xs:h-[102%] lg:-right-4 bg-white" />
-            <TradingViewChart className="w-full" symbol="ETHUSD" />
+            <TradingViewChart symbol="ETHUSD" />
           </div>
         </div>
         <div>
