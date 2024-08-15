@@ -18,7 +18,7 @@ contract MintMania is Ownable, Pausable {
     uint256 public constant MAX_SUPPLY = 1000_000_000; // 1 billion
     uint256 public constant INITIAL_SUPPLY = 200_000_000; // 20 million (20% of max supply)
     uint256 public constant INITIAL_COLLATORAL = 1000_000_000; // 1k usdt
-    uint32 private constant RR = 350000; // part per milliom
+    uint32 private constant RR = 380020; // part per milliom
 
     IERC20 public immutable stableToken;
     BancorBondingCurve private immutable bondingCurve;

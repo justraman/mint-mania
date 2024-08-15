@@ -10,7 +10,7 @@ import "@openzeppelin-contracts-5.0.2/access/Ownable.sol";
 
 contract MockUSDT is ERC20 {
     constructor(address owner) ERC20("Tether", "USDT", 6) {
-        _mint(owner, 1000_000_000);
+        _mint(owner, 68070_000_000); // 100000 usdt
     }
 }
 
@@ -62,27 +62,48 @@ contract MintManiaTest is Test {
         MintMania mania = createToken();
 
         // buy 1000 usdt worth of token
-        assertEq(mania.getPrice(token), 14);
+        assertEq(mania.getPrice(token), 13);
         usdt.approve(address(mania), 1000_000_000);
         mania.buy(token, 1000_000_000);
         assertEq(usdt.balanceOf(address(mania)), 1000_000_000);
-        assertEq(usdt.balanceOf(alice), 0);
-       
-        assertEq(Token(token).balanceOf(alice), 54_912_125);
-        assertEq(mania.getPrice(token), 22);
+        assertEq(usdt.balanceOf(alice), 67070000000);
 
-        // sell half tokens 54_912_125/2 = 27_456_062
+        assertEq(Token(token).balanceOf(alice), 60271979);
+        assertEq(mania.getPrice(token), 20);
 
-        mania.sell(token, 27_456_062);
-        assertEq(usdt.balanceOf(address(mania)), 444180558);
-        assertEq(usdt.balanceOf(alice), 555_819442); // got my 555 usdt back
-        assertEq(Token(token).balanceOf(alice), 27_456_063);
-        assertEq(mania.getPrice(token), 18);
+        // sell half tokens 60271979/2 = 30135989
 
-        mania.sell(token, 27_456_063);
-        assertEq(usdt.balanceOf(address(mania)), 6);
-        assertEq(usdt.balanceOf(alice), 999999994); //small overflow
+        mania.sell(token, 30135989);
+        assertEq(usdt.balanceOf(address(mania)), 446765882);
+        assertEq(usdt.balanceOf(alice), 67623234118); // got my 553 usdt back
+        assertEq(Token(token).balanceOf(alice), 30_135_990);
+        assertEq(mania.getPrice(token), 16);
+
+        mania.sell(token, 30135990);
+        assertEq(usdt.balanceOf(address(mania)), 3);
+        assertEq(usdt.balanceOf(alice), 68069999997); //small overflow
         assertEq(Token(token).balanceOf(alice), 0);
-        assertEq(mania.getPrice(token), 14); // price reset to initial
+        assertEq(mania.getPrice(token), 13); // price reset to initial
+
+        // buy a lot of tokens
+        usdt.approve(address(mania), 68069999997);
+        mania.buy(token, 68069999997);
+        assertEq(usdt.balanceOf(address(mania)), 68070000000);
+        assertEq(usdt.balanceOf(alice), 0);
+        assertEq(Token(token).balanceOf(alice), 799992572); // almost 800 million
+        assertEq(mania.getPrice(token), 181);
+
+
+        mania.sell(token, 30_135_989);
+        assertEq(usdt.balanceOf(address(mania)), 62726427110);
+        assertEq(usdt.balanceOf(alice), 5343_572_890); // got my 553 usdt back
+        assertEq(Token(token).balanceOf(alice), 769856583);
+        assertEq(mania.getPrice(token), 172);
+
+        mania.sell(token, 30_135_989);
+        assertEq(usdt.balanceOf(address(mania)), 57646992942);
+        assertEq(usdt.balanceOf(alice), 10423_007_058); // got my 553 usdt back
+        assertEq(Token(token).balanceOf(alice), 739720594);
+        assertEq(mania.getPrice(token), 164);
     }
 }
