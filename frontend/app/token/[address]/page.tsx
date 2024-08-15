@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import TradingViewChart from "../TradingViewChart";
-import TradeBox from "../TradeBox";
+import TradingViewChart from "./trading-view-chart";
+import TradeBox from "./trade-box";
 
 function TokenDetail({ params }: { params: { address: string } }) {
   return (

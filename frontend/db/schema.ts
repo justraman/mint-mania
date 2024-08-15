@@ -1,4 +1,4 @@
-import { bigint, integer, pgEnum, pgTable, primaryKey, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { bigint, boolean, integer, pgEnum, pgTable, primaryKey, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const tokens = pgTable("tokens", {
   id: serial("id").primaryKey(),
@@ -10,6 +10,8 @@ export const tokens = pgTable("tokens", {
   telegram: text("telegram"),
   discord: text("discord"),
   website: text("website"),
+  confirmedByIndexer: boolean("confirmed").default(false),
+  txHash: text("tx_hash"),
   createdAt: timestamp("created_at").defaultNow()
 });
 

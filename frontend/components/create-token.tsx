@@ -10,11 +10,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { X } from "lucide-react";
+import { saveToken } from "@/app/actions";
+import { useWeb3Modal } from "@web3modal/wagmi/react";
+import { useAccount } from "wagmi";
+import { writeContract, waitForTransactionReceipt, WriteContractErrorType, simulateContract } from "@wagmi/core";
+import MintManiaAbi from "@/abi/MintMania";
+import { contractAddresses } from "@/constants";
+import { useRouter } from "next/navigation";
+import { config } from "@/app/wagmi-config";
 
 const validation = z.object({
   tokenName: z.string().min(3).max(255),
   tokenSymbol: z.string().min(2).max(5),
-  image: typeof window === "undefined" ? z.any() : z.instanceof(FileList).refine((file) => file?.length == 1, "File is required."),
+  image: typeof window !== "undefined" ? z.instanceof(FileList).refine((file) => file?.length == 1, "File is required.") : z.any(),
   twitter: z.union([
     z.string().url("invalid twitter").startsWith("https://twitter.com/").optional(),
     z
@@ -51,6 +59,7 @@ export default function CreateToken() {
     defaultValues: {
       tokenName: "",
       tokenSymbol: "",
+      image: [] as unknown as FileList,
       twitter: "",
       telegram: "",
       discord: "",
@@ -58,12 +67,56 @@ export default function CreateToken() {
     }
   });
 
+  const { isConnected } = useAccount();
+  const { open } = useWeb3Modal();
+  const router = useRouter();
+
   const [hasSocials, setHasSocials] = React.useState(false);
+  const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
   const [showCreateToken, setShowCreateToken] = React.useState(false);
+  const [error, setError] = React.useState("");
   const imageRef = form.register("image");
 
-  const handleSubmit = (data: z.output<typeof validation>) => {
-    console.log(data);
+  const handleSubmit = async (data: z.output<typeof validation>) => {
+    if (!isConnected) return open({ view: "Connect" });
+    const imageUri = crypto.randomUUID();
+    setError("");
+
+    try {
+      setWaitingForTransaction(true);
+      const { request } = await simulateContract(config, {
+        abi: MintManiaAbi.abi,
+        address: contractAddresses,
+        functionName: "create",
+        args: [data.tokenName, data.tokenSymbol, imageUri]
+      });
+
+      const hash = await writeContract(config, request);
+
+      const formData = new FormData();
+      formData.append("file", data.image[0]);
+      formData.append("data", JSON.stringify({ ...data, image: undefined, imageUri: imageUri, txHash: hash }));
+      const token = await saveToken(formData);
+
+      await waitForTransactionReceipt(config, {
+        hash
+      });
+
+      // redirect to token page
+
+      router.push(`/token/${token.id}`);
+    } catch (error: any) {
+      let typedError = error as WriteContractErrorType;
+      if (typedError.name === "ContractFunctionExecutionError") {
+        setError(typedError.shortMessage);
+      } else if (typedError.name === "TransactionExecutionError") {
+        setError(typedError.details);
+      } else {
+        setError(error.message);
+      }
+    } finally {
+      setWaitingForTransaction(false);
+    }
   };
 
   function getImageUrl() {
@@ -92,11 +145,14 @@ export default function CreateToken() {
         <div className="w-fit mt-4 mx-auto">
           <div className="w-full flex items-center px-28 flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
             <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%]  md:-right-2 md:w-[102%] xs:h-[102%]  bg-white" />
+            <span role="button" onClick={() => setShowCreateToken(false)} className="absolute top-4 right-4 cursor-pointer">
+              <X />
+            </span>
             <h2 className="text-4xl font-bold mb-4 text-center">Create Token</h2>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)}>
-                <div className="flex items-center flex-col md:flex-row gap-8">
-                  <div className="flex flex-col gap-4 ">
+                <div className="flex items-center justify-center flex-col md:flex-row gap-8">
+                  <div className="flex flex-col justify-center gap-4 ">
                     <FormField
                       control={form.control}
                       name="image"
@@ -218,6 +274,7 @@ export default function CreateToken() {
                   )}
                 </div>
                 <div className="mx-auto mt-4 text-center w-auto">
+                  {error && <p className="text-red-500 text-center mx-auto max-w-56 break-all">{error}</p>}
                   <Button
                     type="button"
                     onClick={() => setHasSocials((v) => !v)}
@@ -229,9 +286,10 @@ export default function CreateToken() {
 
                   <button
                     type="submit"
+                    disabled={waitingForTransaction}
                     className="p-2 px-14 border-[1px] border-primary text-primary text-center mt-4 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
                   >
-                    Create Token
+                    {waitingForTransaction ? "Creating Token..." : "Create Token"}
                   </button>
                 </div>
               </form>
