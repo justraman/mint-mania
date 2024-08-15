@@ -6,8 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p ${APP_PORT-3020}",
-    "lint": "next lint",
-    "email": "email dev"
+    "db:push": "drizzle-kit push --config db/drizzle.config.ts",
+    "db:generate": "drizzle-kit generate --config db/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config db/drizzle.config.ts",
+    "lint": "next lint"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

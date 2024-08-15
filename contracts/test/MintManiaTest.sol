@@ -93,7 +93,6 @@ contract MintManiaTest is Test {
         assertEq(Token(token).balanceOf(alice), 799992572); // almost 800 million
         assertEq(mania.getPrice(token), 181);
 
-
         mania.sell(token, 30_135_989);
         assertEq(usdt.balanceOf(address(mania)), 62726427110);
         assertEq(usdt.balanceOf(alice), 5343_572_890); // got my 553 usdt back
