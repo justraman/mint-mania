@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
+    "@neondatabase/serverless": "^0.9.4",
     "@prisma/client": "^5.15.0",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
@@ -29,6 +30,7 @@
     "class-variance-authority": "^0.7.0",
     "client-only": "^0.0.1",
     "clsx": "^2.1.0",
+    "drizzle-orm": "^0.33.0",
     "lucide-react": "^0.400.0",
     "next": "14.2.4",
     "next-auth": "^5.0.0-beta.18",
@@ -55,10 +57,10 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "drizzle-kit": "^0.24.0",
     "eslint": "^8",
     "eslint-config-next": "14.1.4",
     "postcss": "^8",
-    "prisma": "^5.15.0",
     "tailwindcss": "^3.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5"

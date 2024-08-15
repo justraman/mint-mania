@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 
-export default function Hero() {
+export default function CreateToken() {
   const [image, setImage] = useState(null);
   const [tokenName, setTokenName] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
@@ -36,7 +37,7 @@ export default function Hero() {
               <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleImageUpload} />
               <div className="w-36 h-36 bg-gray-200 flex items-center justify-center overflow-hidden">
                 {image ? (
-                  <img src={image} alt="Uploaded" className="w-full h-full object-cover" />
+                  <Image src={image} alt="Uploaded" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-gray-500 text-lg">Upload Image</span>
                 )}
