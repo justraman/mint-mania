@@ -1,68 +1,244 @@
 "use client";
-import React, { useState } from "react";
+
+import React from "react";
+import z from "zod";
 import Image from "next/image";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { X } from "lucide-react";
+
+const validation = z.object({
+  tokenName: z.string().min(3).max(255),
+  tokenSymbol: z.string().min(2).max(5),
+  image: typeof window === "undefined" ? z.any() : z.instanceof(FileList).refine((file) => file?.length == 1, "File is required."),
+  twitter: z.union([
+    z.string().url("invalid twitter").startsWith("https://twitter.com/").optional(),
+    z
+      .string()
+      .max(0)
+      .transform((value) => (value === "" ? undefined : value))
+  ]),
+  telegram: z.union([
+    z.string().url("invalid telegram").startsWith("https://t.me/").optional(),
+    z
+      .string()
+      .max(0)
+      .transform((value) => (value === "" ? undefined : value))
+  ]),
+  discord: z.union([
+    z.string().url("invalid discord").startsWith("https://discord.gg/").optional(),
+    z
+      .string()
+      .max(0)
+      .transform((value) => (value === "" ? undefined : value))
+  ]),
+  website: z.union([
+    z.string().url("invalid website").startsWith("https://").optional(),
+    z
+      .string()
+      .max(0)
+      .transform((value) => (value === "" ? undefined : value))
+  ])
+});
 
 export default function CreateToken() {
-  const [image, setImage] = useState(null);
-  const [tokenName, setTokenName] = useState("");
-  const [tokenSymbol, setTokenSymbol] = useState("");
-
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
+  const form = useForm<z.infer<typeof validation>>({
+    resolver: zodResolver(validation),
+    defaultValues: {
+      tokenName: "",
+      tokenSymbol: "",
+      twitter: "",
+      telegram: "",
+      discord: "",
+      website: ""
     }
+  });
+
+  const [hasSocials, setHasSocials] = React.useState(false);
+  const [showCreateToken, setShowCreateToken] = React.useState(false);
+  const imageRef = form.register("image");
+
+  const handleSubmit = (data: z.output<typeof validation>) => {
+    console.log(data);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("Token Name:", tokenName);
-    console.log("Token Symbol:", tokenSymbol);
-  };
+  function getImageUrl() {
+    return URL.createObjectURL(form.getValues().image[0]);
+  }
+
   return (
-    <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
-      <div
-        className="grid grid-cols-1 
-        sm:grid-cols-1 md:grid-cols-2
-        gap-7 mt-4
-        lg:grid-cols-3"
-      >
-        <div className="w-full flex items-center flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
-          <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%]  md:-right-2 md:w-[102%] xs:h-[102%]  bg-white" />
-          <h2 className="text-4xl font-bold mb-4 text-center">Create Token</h2>
-
-          <div className="flex justify-center">
-            <label className="relative cursor-pointer">
-              <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleImageUpload} />
-              <div className="w-36 h-36 bg-gray-200 flex items-center justify-center overflow-hidden">
-                {image ? (
-                  <Image src={image} alt="Uploaded" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-gray-500 text-lg">Upload Image</span>
-                )}
-              </div>
-            </label>
-          </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <label className="block">
-              <Input className="text-green-900 text-xl" type="text" placeholder="Token Name" />
-            </label>
-
-            <label className="block">
-              <Input className="text-green-900 text-xl" type="text" placeholder="Token Symbol" />
-            </label>
-
-            <button
-              type="submit"
-              className="p-2 px-3 border-[1px] border-primary text-primary w-full text-center mt-2 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
-            >
-              Create Token
-            </button>
-          </form>
+    <>
+      {!showCreateToken && (
+        <div className="mx-auto text-center">
+          <button
+            onClick={() => setShowCreateToken(true)}
+            type="submit"
+            className="p-2 my-8 px-14 border-[1px] border-primary text-primary text-center mt-4 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
+          >
+            Create Token
+          </button>
         </div>
-      </div>
-    </section>
+      )}
+      <section
+        className={
+          showCreateToken ? "w-auto mx-auto px-4 sm:px-6 duration-500 transition-transform lg:px-8 mb-10" : "-translate-y-8 max-h-0 overflow-hidden"
+        }
+        id="services"
+      >
+        <div className="w-fit mt-4 mx-auto">
+          <div className="w-full flex items-center px-28 flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
+            <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%]  md:-right-2 md:w-[102%] xs:h-[102%]  bg-white" />
+            <h2 className="text-4xl font-bold mb-4 text-center">Create Token</h2>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)}>
+                <div className="flex items-center flex-col md:flex-row gap-8">
+                  <div className="flex flex-col gap-4 ">
+                    <FormField
+                      control={form.control}
+                      name="image"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="flex justify-center">
+                              <label className="relative cursor-pointer">
+                                <input
+                                  accept="image/png, image/gif, image/jpeg"
+                                  type="file"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  {...imageRef}
+                                />
+                                <div className="w-40 h-40 bg-gray-200 rounded-none flex items-center justify-center overflow-hidden">
+                                  {form.getValues().image?.length > 0 ? (
+                                    <Image width={160} height={144} src={getImageUrl()} alt="Uploaded" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-gray-500 text-lg">Upload Image</span>
+                                  )}
+                                </div>
+                              </label>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tokenName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <label className="block">
+                              <Input {...field} className="text-green-900 rounded-none text-xl" type="text" placeholder="Token Name" />
+                            </label>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tokenSymbol"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <label className="block">
+                              <Input {...field} className="text-green-900 rounded-none text-xl" type="text" placeholder="Token Symbol" />
+                            </label>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {hasSocials && (
+                    <div className="flex flex-col gap-4 ">
+                      <FormField
+                        control={form.control}
+                        name="twitter"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <label className="block">
+                                <Input {...field} className="text-green-900 text-xl rounded-none" type="text" placeholder="Twitter" />
+                              </label>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="telegram"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <label className="block">
+                                <Input {...field} className="text-green-900  text-xl rounded-none" type="text" placeholder="Telegram" />
+                              </label>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="discord"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <label className="block">
+                                <Input {...field} className="text-green-900  text-xl rounded-none" type="text" placeholder="Discord" />
+                              </label>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="website"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <label className="block">
+                                <Input {...field} className="text-green-900  text-xl rounded-none" type="text" placeholder="Website" />
+                              </label>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="mx-auto mt-4 text-center w-auto">
+                  <Button
+                    type="button"
+                    onClick={() => setHasSocials((v) => !v)}
+                    className="h-6 w-40 px-0 hover:bg-green-300 mx-auto text-black flex self-center justify-center gap-2"
+                  >
+                    {hasSocials ? <X size={16} /> : <Plus size={16} />}
+                    {hasSocials ? "Hide" : "Add"} Socials
+                  </Button>
+
+                  <button
+                    type="submit"
+                    className="p-2 px-14 border-[1px] border-primary text-primary text-center mt-4 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
+                  >
+                    Create Token
+                  </button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -15,16 +15,16 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.3.4",
+    "@hookform/resolvers": "^3.9.0",
     "@neondatabase/serverless": "^0.9.4",
     "@prisma/client": "^5.15.0",
     "@radix-ui/react-dialog": "^1.0.5",
-    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-progress": "^1.0.3",
     "@radix-ui/react-radio-group": "^1.2.0",
     "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-select": "^2.0.0",
-    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-slot": "^1.1.0",
     "@tanstack/react-query": "^5.29.2",
     "aos": "^2.3.4",
     "bignumber.js": "^9.1.2",
@@ -40,7 +40,7 @@
     "pg": "^8.11.5",
     "react": "^18",
     "react-dom": "^18",
-    "react-hook-form": "^7.51.4",
+    "react-hook-form": "^7.52.2",
     "server-only": "^0.0.1",
     "sharp": "^0.33.4",
     "siwe": "^2.3.2",
@@ -50,7 +50,7 @@
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.13.1",
     "wagmi": "^2.9.8",
-    "zod": "^3.23.6"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13",
