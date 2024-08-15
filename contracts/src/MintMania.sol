@@ -21,7 +21,7 @@ contract MintMania is Ownable, Pausable {
     uint32 private constant RR = 350000; // part per milliom
 
     IERC20 public immutable stableToken;
-    BancorBondingCurve public immutable bondingCurve;
+    BancorBondingCurve private immutable bondingCurve;
 
     mapping(address => TokenInfo) private tokens;
     mapping(address => mapping(address => uint256)) private balances;
