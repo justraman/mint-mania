@@ -6,13 +6,14 @@ import Footer from "./_components/Footer";
 import { headers } from "next/headers";
 import { cookieToInitialState } from "wagmi";
 import { config } from "./wagmi-config";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: "Mint Mania",
   description: "Mint Mania"
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const initialState = cookieToInitialState(config, headers().get("cookie"));
   return (
     <html lang="en">
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
           <Header />
           <div className="md:px-20">{children}</div>
         </AppKitProvider>
+        <Toaster />
 
         <Footer />
       </body>

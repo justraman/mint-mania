@@ -1,32 +1,66 @@
-"use client"
-import React, { useEffect } from 'react';
+"use client";
 
-const TradingViewChart = ({ symbol = "ETHUSD", theme = "dark", height = 400 }) => {
+import { createChart, ColorType, LineStyle } from "lightweight-charts";
+import React, { useEffect, useRef } from "react";
+
+export default function ChartComponent(props: any) {
+  const {
+    data,
+    colors: { backgroundColor = "black", lineColor = "#99ffb3", textColor = "white", areaTopColor = "#99ffb3", areaBottomColor = "#0e8734" } = {}
+  } = props;
+
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = `https://s3.tradingview.com/tv.js`;
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      new window.TradingView.widget({
-        autosize: true,
-        symbol: symbol,
-        interval: 'D',
-        timezone: 'Etc/UTC',
-        theme: theme,
-        style: '1',
-        locale: 'en',
-        container_id: 'tradingview_widget',
-      });
+    const handleResize = () => {
+      const container = chartContainerRef.current as unknown as HTMLElement;
+      if (container) {
+        chart.applyOptions({ width: container.clientWidth });
+      }
     };
+
+    const chart = createChart(chartContainerRef.current as unknown as HTMLElement, {
+      layout: {
+        background: { type: ColorType.Solid, color: backgroundColor },
+        textColor,
+        fontSize: 12,
+        fontFamily: "TheFountainOfWishes"
+      },
+      grid: {
+        vertLines: {
+          color: "#333333"
+        },
+        horzLines: {
+          color: "#333333"
+        }
+      },
+      height: 500
+    });
+    chart.timeScale().applyOptions({
+      timeVisible: true,
+      uniformDistribution: true,
+      fixLeftEdge: true,
+      fixRightEdge: true
+    });
+
+    const newSeries = chart.addLineSeries({
+      lineStyle: LineStyle.Solid,
+      color: lineColor,
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => `$${(price/1000000).toFixed(6)}` // Example: Format prices as "$X.XX"
+      }
+    });
+    newSeries.setData(data);
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      document.body.removeChild(script);
+      window.removeEventListener("resize", handleResize);
+
+      chart.remove();
     };
-  }, [symbol, theme]);
+  }, [data, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor]);
 
-  return <div id="tradingview_widget" style={{ height: `${height}px` }} />;
-};
-
-export default TradingViewChart;
+  return <div ref={chartContainerRef} className="h-full w-full" />;
+}

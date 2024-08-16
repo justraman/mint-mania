@@ -1,17 +1,29 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { Input } from "@/components/ui/input";
 import { useAccount, useReadContract } from "wagmi";
 import Erc20Abi from "@/abi/Erc20";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import type { tokens } from "@/db/schema";
 import BigNumber from "bignumber.js";
 import { contractAddresses, usdtContractAddress } from "@/constants";
 import { formatUnits, parseUnits } from "viem";
 import MintMania from "@/abi/MintMania";
-import { readContract } from "@wagmi/core";
+import { readContract, simulateContract, waitForTransactionReceipt, writeContract, WriteContractErrorType } from "@wagmi/core";
 import { config } from "@/app/wagmi-config";
 import debounce from "lodash/debounce";
+import { useToast } from "@/components/ui/use-toast";
+import { pusher } from "@/pusher";
 
 function formatUSDT(value: bigint | undefined) {
   if (!value) return "0.0";
@@ -23,9 +35,13 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const { open } = useWeb3Modal();
   const account = useAccount();
   const [inputValue, setInputValue] = useState("");
+  const [error, setError] = React.useState("");
+  const [allowanceDialogOpen, setAllowanceDialogOpen] = React.useState(false);
+  const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
   const [estimateTokenValue, setEstimateTokenValue] = useState<bigint | undefined>(undefined);
   const [estimateUsdtValue, setEstimateUsdtValue] = useState<bigint | undefined>(undefined);
 
+  const { toast } = useToast();
   const usdtBalance = useReadContract({
     abi: Erc20Abi,
     address: usdtContractAddress,
@@ -36,8 +52,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const calculateEstimated = async () => {
     if (!inputValue) return;
     if (!token.address) return;
-    setEstimateTokenValue(undefined);
-    setEstimateUsdtValue(undefined);
+
     try {
       if (selectedButton === "buy") {
         const value = parseUnits(inputValue, 6);
@@ -59,11 +74,35 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
         setEstimateUsdtValue(estimate);
       }
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
   };
 
-  useEffect(debounce(calculateEstimated), [inputValue]);
+  useEffect(() => {
+    var channel = pusher.subscribe("trades");
+    channel.bind("new-trade", function (data: any) {
+      usdtBalance.refetch();
+      tokenBalance.refetch();
+    });
+
+    return () => {
+      pusher.unsubscribe("trades");
+    };
+  }, []);
+
+  useEffect(() => {
+    setEstimateTokenValue(undefined);
+    setEstimateUsdtValue(undefined);
+    const debouncedCalculateEstimated = debounce(calculateEstimated, 1000);
+    debouncedCalculateEstimated();
+    return debouncedCalculateEstimated.cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
+
+  useEffect(() => {
+    setEstimateTokenValue(undefined);
+    setEstimateUsdtValue(undefined);
+  }, [selectedButton]);
 
   const tokenBalance = useReadContract({
     abi: Erc20Abi,
@@ -75,98 +114,253 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const setMax = () => {
     if (selectedButton === "buy" && usdtBalance.data) {
       setInputValue(formatUnits(usdtBalance.data, 6));
+    } else {
+      setInputValue(tokenBalance.data ? formatUnits(tokenBalance.data, 0) : "0");
+    }
+  };
+
+  const addAllowance = async () => {
+    try {
+      setError("");
+      setWaitingForTransaction(true);
+      const { request } = await simulateContract(config, {
+        abi: Erc20Abi,
+        address: usdtContractAddress,
+        functionName: "approve",
+        args: [contractAddresses, BigInt(50000_000_000)] // 50k USDT
+      });
+
+      const hash = await writeContract(config, request);
+      await waitForTransactionReceipt(config, {
+        hash
+      });
+      setWaitingForTransaction(false);
+      setAllowanceDialogOpen(false);
+    } catch (error: any) {
+      let typedError = error as WriteContractErrorType;
+      if (typedError.name === "ContractFunctionExecutionError") {
+        setError(typedError.shortMessage);
+      } else if (typedError.name === "TransactionExecutionError") {
+        setError(typedError.details);
+      } else {
+        setError(error.message);
+      }
+    } finally {
+      setWaitingForTransaction(false);
+    }
+  };
+
+  const requestAllowance = () => {
+    setAllowanceDialogOpen(true);
+  };
+
+  const checkAlowance = async (value: bigint) => {
+    if (!token.address) return;
+    const allowance = await readContract(config, {
+      abi: Erc20Abi,
+      address: usdtContractAddress,
+      functionName: "allowance",
+      args: [account.address ?? "0x", contractAddresses]
+    });
+
+    if (allowance < value) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue) return;
+    setError("");
+    try {
+      setWaitingForTransaction(true);
+      if (selectedButton === "buy") {
+        const value = parseUnits(inputValue, 6);
+        const hasAllowance = await checkAlowance(value);
+
+        if (!hasAllowance) {
+          return requestAllowance();
+        }
+
+        const { request } = await simulateContract(config, {
+          abi: MintMania.abi,
+          address: contractAddresses,
+          functionName: "buy",
+          args: [token.address as `0x${string}`, value]
+        });
+
+        const hash = await writeContract(config, request);
+        setWaitingForTransaction(false);
+        toast({
+          title: "Trade placed",
+          duration: 5000
+        });
+        await waitForTransactionReceipt(config, {
+          hash
+        });
+
+        usdtBalance.refetch();
+        tokenBalance.refetch();
+      } else {
+        const value = BigInt(inputValue);
+        const { request } = await simulateContract(config, {
+          abi: MintMania.abi,
+          address: contractAddresses,
+          functionName: "sell",
+          args: [token.address as `0x${string}`, value]
+        });
+
+        const hash = await writeContract(config, request);
+        setWaitingForTransaction(false);
+        toast({
+          title: "Trade placed",
+          duration: 5000
+        });
+
+        await waitForTransactionReceipt(config, {
+          hash
+        });
+
+        usdtBalance.refetch();
+        tokenBalance.refetch();
+      }
+    } catch (error: any) {
+      let typedError = error as WriteContractErrorType;
+      if (typedError.name === "ContractFunctionExecutionError") {
+        setError(typedError.shortMessage);
+      } else if (typedError.name === "TransactionExecutionError") {
+        setError(typedError.details);
+      } else {
+        setError(error.message);
+      }
+    } finally {
+      setWaitingForTransaction(false);
+      setEstimateTokenValue(undefined);
+      setEstimateUsdtValue(undefined);
     }
   };
 
   return (
-    <div className="w-full border border-solid border-primary bg-black shadow-2xl relative p-6">
-      <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%] md:-right-3 md:w-[102%] xs:h-[102%] lg:-right-4 bg-white " />
-      <div className="grid gap-4">
-        <div className="flex gap-4">
-          <button
-            onClick={() => setSelectedButton("buy")}
-            className={`p-3 border-[1px] ${
-              selectedButton === "buy" ? "bg-primary text-green-900" : "text-primary"
-            } w-full text-center text-2xl cursor-pointer hover:bg-primary hover:text-green-900 transition flex items-center justify-center`}
-          >
-            Buy
-          </button>
-          <button
-            onClick={() => setSelectedButton("sell")}
-            className={`p-3 border-[1px] ${
-              selectedButton === "sell" ? "bg-red-500 text-white border-red" : "text-primary border-primary"
-            } w-full text-center text-2xl cursor-pointer hover:bg-red-500 hover:text-white hover:border-white transition flex items-center justify-center`}
-          >
-            Sell
-          </button>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div>
-            <div className="flex relative h-10 items-center">
-              <button
-                onClick={setMax}
-                className="!absolute cursor-pointer right-1 top-1 z-10 select-none rounded bg-secondary py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md transition-all hover:shadow-lg focus:shadow-none active:shadow-none peer-placeholder-shown:pointer-events-none peer-placeholder-shown:bg-blue-gray-500 peer-placeholder-shown:shadow-none"
-                type="button"
-                data-ripple-light="true"
-              >
-                max
-              </button>
-              <Input
-                className="text-black font-bold peer h-full w-full rounded-[7px] border pr-20 font-sans text-sm  outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
-                placeholder="0.0"
-                type="number"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                step="1"
-              />
-              <label className="pointer-events-none absolute right-28  flex w-auto  select-none text-lg pleading-tight text-black ">
-                {selectedButton == "buy" ? "USDT" : "Token"}
-              </label>
-            </div>
-            {estimateTokenValue && (
-              <div className="text-md mt-1 ml-3 font-sans lowercase">
-                {Intl.NumberFormat().format(estimateTokenValue)} <span className="">{token.symbol}</span>
-              </div>
-            )}
-            {estimateUsdtValue && (
-              <div className="text-md mt-1 ml-3 font-sans lowercase">
-                {Intl.NumberFormat().format(Number(estimateUsdtValue) / 1000_000)} <span className="">USDT</span>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            disabled={token.confirmedByIndexer === false}
-            className="p-3 disabled:bg-gray-300 disabled:border-none disabled:text-black border-[1px] border-primary text-primary w-full text-center text-2xl cursor-pointer hover:bg-primary hover:text-green-900 transition flex items-center justify-center"
-          >
-            {token.confirmedByIndexer === false ? "Token is being indexed..." : "Place Trade"}
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span>
-              USDT Balance: <span className="text-xl ml-4">{formatUSDT(usdtBalance.data)} USDT</span>
-            </span>
+    <>
+      <AlertDialog open={allowanceDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Allow to spend USDT</AlertDialogTitle>
+            <AlertDialogDescription>Before you Buy, You need to allow the contract to spend USDT on your behalf</AlertDialogDescription>
+          </AlertDialogHeader>
+          {error && <p className="text-red-500 text-center mx-auto max-w-56 break-all">{error}</p>}
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-black text-xl rounded-none bg-red-300" onClick={() => setAllowanceDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
 
-            <button
-              onClick={() =>
-                open({
-                  view: "OnRampProviders"
-                })
-              }
-              className="border px-2"
+            <AlertDialogAction
+              onClick={() => addAllowance()}
+              className="w-full rounded-none text-center text-2xl cursor-pointer hover:bg-primary text-green-900 transition flex items-center justify-center"
             >
-              BUY USDT <span className="text-xl ml-1">+</span>
+              {waitingForTransaction ? "Waiting for transaction..." : "Approve"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className="w-full border border-solid border-primary bg-black shadow-2xl relative p-6">
+        <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%] md:-right-3 md:w-[102%] xs:h-[102%] lg:-right-4 bg-white " />
+        <div className="grid gap-4">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setSelectedButton("buy")}
+              className={`p-3 border-[1px] ${
+                selectedButton === "buy" ? "bg-primary text-green-900" : "text-primary"
+              } w-full text-center text-2xl cursor-pointer hover:bg-primary hover:text-green-900 transition flex items-center justify-center`}
+            >
+              Buy
+            </button>
+            <button
+              onClick={() => setSelectedButton("sell")}
+              className={`p-3 border-[1px] ${
+                selectedButton === "sell" ? "bg-red-500 text-white border-red" : "text-primary border-primary"
+              } w-full text-center text-2xl cursor-pointer hover:bg-red-500 hover:text-white hover:border-white transition flex items-center justify-center`}
+            >
+              Sell
             </button>
           </div>
-          <div className="flex items-center">
-            Token Balance:{" "}
-            <span className="text-xl ml-4">
-              {tokenBalance.data ? formatUnits(tokenBalance.data, 0) : "0"} {token.symbol}
-            </span>
+          <form onSubmit={onSubmit}>
+            <div className="flex flex-col gap-4">
+              <div>
+                <div className="flex relative h-10 items-center">
+                  <button
+                    onClick={setMax}
+                    className="!absolute cursor-pointer right-1 top-1 z-10 select-none rounded bg-secondary py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md transition-all hover:shadow-lg focus:shadow-none active:shadow-none peer-placeholder-shown:pointer-events-none peer-placeholder-shown:bg-blue-gray-500 peer-placeholder-shown:shadow-none"
+                    type="button"
+                    data-ripple-light="true"
+                  >
+                    max
+                  </button>
+                  <Input
+                    className="text-black font-bold peer h-full w-full rounded-[7px] border pr-20 font-sans text-sm  outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
+                    placeholder="0.0"
+                    type="number"
+                    required
+                    value={inputValue}
+                    max={50000_000_000}
+                    onChange={(e) => (Number(e.target.value) < 50000_000_000 ? setInputValue(e.target.value) : "")}
+                    step="0.01"
+                  />
+                  <label className="pointer-events-none absolute right-28  flex w-auto  select-none text-lg pleading-tight text-black ">
+                    {selectedButton == "buy" ? "USDT" : "Token"}
+                  </label>
+                </div>
+
+                {estimateTokenValue && (
+                  <div className="text-md mt-1 ml-3 font-sans lowercase">
+                    {Intl.NumberFormat().format(estimateTokenValue)} <span className="uppercase font-['TheFountainOfWishes']">{token.symbol}</span>
+                  </div>
+                )}
+                {estimateUsdtValue && (
+                  <div className="text-md mt-1 ml-3 font-sans lowercase">
+                    {Intl.NumberFormat().format(Number(estimateUsdtValue) / 1000_000)}{" "}
+                    <span className="uppercase font-['TheFountainOfWishes']">USDT</span>
+                  </div>
+                )}
+              </div>
+              {error && <p className="text-red-500 text-center mx-auto max-w-56 break-all">{error}</p>}
+              <button
+                type="submit"
+                disabled={token.confirmed === false || waitingForTransaction === true}
+                className="p-3 disabled:bg-gray-300 disabled:border-none disabled:text-black border-[1px] border-primary text-primary w-full text-center text-2xl cursor-pointer hover:bg-primary hover:text-green-900 transition flex items-center justify-center"
+              >
+                {token.confirmed === false ? "Token is being indexed..." : "Place Trade"}
+              </button>
+            </div>
+          </form>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span>
+                USDT Balance: <span className="text-xl ml-4">{formatUSDT(usdtBalance.data)} USDT</span>
+              </span>
+
+              <button
+                onClick={() =>
+                  open({
+                    view: "OnRampProviders"
+                  })
+                }
+                className="border px-2"
+              >
+                BUY USDT <span className="text-xl ml-1">+</span>
+              </button>
+            </div>
+            <div className="flex items-center">
+              Token Balance:{" "}
+              <span className="text-xl ml-4">
+                {tokenBalance.data ? formatUnits(tokenBalance.data, 0) : "0"} {token.symbol}
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
