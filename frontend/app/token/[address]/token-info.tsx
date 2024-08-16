@@ -20,7 +20,7 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
 
   const bondingCurve = (data: bigint | undefined) => {
     if (!data) return 0;
-    return Number((data - 200_000_000n) / 1000_000_0n);
+    return Number((data - 200_000_000n) / 8000_000n);
   };
 
   useEffect(() => {

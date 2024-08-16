@@ -12,6 +12,8 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+export const revalidate = 0;
+
 export default async function Token({ params }: { params: { address: string } }) {
   const isAddress = isHex(params.address);
   const token = await db.query.tokens.findFirst({
@@ -44,7 +46,7 @@ export default async function Token({ params }: { params: { address: string } })
       )}
       <div className="grid grid-cols-1 gap-8 place-content-center lg:grid-cols-3 lg:gap-16">
         <div className="lg:col-span-2 content-center">
-          <Link href="/" className="flex gap-4 ml-2 group">
+          <Link href="/" className="flex gap-4 ml-2 group w-fit">
             <MoveLeft className="cursor-pointer transition-transform group-hover:-translate-x-2 mb-6" /> Home
           </Link>
           <div className="w-full border border-primary self-center border-solid  bg-black shadow-2xl relative">

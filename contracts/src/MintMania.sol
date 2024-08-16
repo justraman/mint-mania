@@ -49,6 +49,7 @@ contract MintMania is Ownable, Pausable {
         uint256 tokenAmount,
         uint256 price
     );
+    event TokenLaunched(address token);
 
     function create(
         string memory name,
@@ -69,6 +70,7 @@ contract MintMania is Ownable, Pausable {
     // amount in token
     function buy(address token, uint256 amount) external payable whenNotPaused {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
+        require(tokens[token].launched == false, "Token is launched");
         require(amount > 0, "Amount must be greater than 0");
 
         uint256 _supply = Token(token).totalSupply();
@@ -107,6 +109,7 @@ contract MintMania is Ownable, Pausable {
 
     function sell(address token, uint256 amountToken) external whenNotPaused {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
+        require(tokens[token].launched == false, "Token is launched");
         require(amountToken > 0, "Amount must be greater than 0");
 
         uint256 _supply = Token(token).totalSupply();
@@ -175,9 +178,6 @@ contract MintMania is Ownable, Pausable {
     function launch(address token) external onlyOwner {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
         require(tokens[token].launched == false, "Token is already launched");
-
-        // integrate dex
-        // add liquidity
 
         tokens[token].launched = true;
     }

@@ -154,6 +154,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue) return;
+    if (!account.isConnected) return open({ view: "Connect" });
     setError("");
     try {
       setWaitingForTransaction(true);
@@ -234,7 +235,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
     return () => {
       pusher.unsubscribe("trades");
     };
-  }, [token.address, tokenBalance, usdtBalance]);
+  }, [router, token.address, tokenBalance, usdtBalance]);
 
   useEffect(() => {
     var channel = pusher.subscribe(`token`);
