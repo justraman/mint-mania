@@ -12,11 +12,14 @@ import { events } from "./abi/mint-mania";
 export const processor = new EvmBatchProcessor()
   .setGateway("https://v2.archive.subsquid.io/network/base-sepolia")
   .setRpcEndpoint({
-    url: assertNotNull(process.env.RPC_ETH_HTTP, "No RPC endpoint supplied"),
-    rateLimit: 10
+    url: assertNotNull(process.env.RPC_ETH_HTTP, "No RPC endpoint supplied")
   })
-  .setFinalityConfirmation(10)
+  .setFinalityConfirmation(75)
   .setFields({
+    log: {
+      topics: true,
+      data: true
+    },
     transaction: {
       from: true,
       value: true,
@@ -28,14 +31,17 @@ export const processor = new EvmBatchProcessor()
   })
   .addLog({
     address: [process.env.CONTRACT_ADDRESS!],
-    topic0: [events.TokenCreated.topic]
+    topic0: [events.TokenCreated.topic],
+    transaction: true
   })
   .addLog({
     address: [process.env.CONTRACT_ADDRESS!],
-    topic0: [events.TokenBought.topic]
+    topic0: [events.TokenBought.topic],
+    transaction: true
   })
   .addLog({
     address: [process.env.CONTRACT_ADDRESS!],
+    transaction: true,
     topic0: [events.TokenSold.topic]
   });
 

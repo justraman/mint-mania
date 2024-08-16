@@ -1,4 +1,4 @@
-export * from "./holder.model"
-export * from "./token.model"
-export * from "./trade.model"
+export * from "./holders.model"
+export * from "./tokens.model"
+export * from "./trades.model"
 export * from "./_tradeSide"

@@ -1,10 +1,10 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, Index as Index_, BigIntColumn as BigIntColumn_, BooleanColumn as BooleanColumn_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
-import {Holder} from "./holder.model"
-import {Trade} from "./trade.model"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, Index as Index_, DateTimeColumn as DateTimeColumn_, BooleanColumn as BooleanColumn_, BigIntColumn as BigIntColumn_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
+import {Holders} from "./holders.model"
+import {Trades} from "./trades.model"
 
 @Entity_()
-export class Token {
-    constructor(props?: Partial<Token>) {
+export class Tokens {
+    constructor(props?: Partial<Tokens>) {
         Object.assign(this, props)
     }
 
@@ -36,8 +36,8 @@ export class Token {
     @StringColumn_({nullable: true})
     website!: string | undefined | null
 
-    @BigIntColumn_({nullable: false})
-    createdAt!: bigint
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
 
     @BooleanColumn_({nullable: false})
     confirmed!: boolean
@@ -48,9 +48,9 @@ export class Token {
     @BigIntColumn_({nullable: false})
     marketCap!: bigint
 
-    @OneToMany_(() => Holder, e => e.tokenEntity)
-    holders!: Holder[]
+    @OneToMany_(() => Holders, e => e.token)
+    holders!: Holders[]
 
-    @OneToMany_(() => Trade, e => e.tokenEntity)
-    trades!: Trade[]
+    @OneToMany_(() => Trades, e => e.token)
+    trades!: Trades[]
 }
