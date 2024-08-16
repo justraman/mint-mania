@@ -5,9 +5,9 @@ import type { EventParams as EParams, FunctionArguments, FunctionReturn } from '
 export const events = {
     OwnershipTransferred: event("0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0", "OwnershipTransferred(address,address)", {"previousOwner": indexed(p.address), "newOwner": indexed(p.address)}),
     Paused: event("0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258", "Paused(address)", {"account": p.address}),
-    TokenBought: event("0x9fa236593f411affe147142a606176190ea6b18be0643332f081175cfe608b6b", "TokenBought(address,address,uint256,uint256)", {"token": p.address, "buyer": p.address, "amount": p.uint256, "price": p.uint256}),
+    TokenBought: event("0x8692cf5ba66abd64f88cdc1ffa0ee9d9c21ee2d999322a20445ae32393394e3e", "TokenBought(address,address,uint256,uint256,uint256)", {"token": p.address, "buyer": p.address, "amount": p.uint256, "tokenAmount": p.uint256, "price": p.uint256}),
     TokenCreated: event("0xffc04f682c7b287e4b552dacd4b833d7c33dc0549cd6da84388408e4830c0562", "TokenCreated(address,string,string)", {"token": p.address, "name": p.string, "symbol": p.string}),
-    TokenSold: event("0xa8a7473f10e62cf9687e243de1c3ac8b3cbc3dd04b96826beb3a65b595385814", "TokenSold(address,address,uint256,uint256)", {"token": p.address, "seller": p.address, "amount": p.uint256, "price": p.uint256}),
+    TokenSold: event("0x9387a595ac4be9038bbb9751abad8baa3dcf219dd9e19abb81552bd521fe3546", "TokenSold(address,address,uint256,uint256,uint256)", {"token": p.address, "seller": p.address, "amount": p.uint256, "tokenAmount": p.uint256, "price": p.uint256}),
     Unpaused: event("0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa", "Unpaused(address)", {"account": p.address}),
 }
 

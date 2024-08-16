@@ -33,7 +33,7 @@ export async function TokenActivity({ token }: { token: typeof tokens.$inferSele
             <TableRow key={trade.id}>
               <TableCell className="font-medium">{trade.side}</TableCell>
               <TableCell>{shortenAddress(trade.address!)}</TableCell>
-              <TableCell>${(trade.amount / 1000000).toFixed(6)}</TableCell>
+              <TableCell>${(Number(trade.amount) / 1000000).toFixed(6)}</TableCell>
               <TableCell>{trade.time}</TableCell>
               <TableCell className="text-right">
                 <a href={`https://sepolia.basescan.org/tx/${trade.txHash}`} className="flex gap-4 justify-end cursor-pointer items-center">

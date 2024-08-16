@@ -14,7 +14,7 @@ export const processor = new EvmBatchProcessor()
   .setRpcEndpoint({
     url: assertNotNull(process.env.RPC_ETH_HTTP, "No RPC endpoint supplied")
   })
-  .setFinalityConfirmation(10)
+  .setFinalityConfirmation(20)
   .setFields({
     log: {
       topics: true,
@@ -27,7 +27,7 @@ export const processor = new EvmBatchProcessor()
     }
   })
   .setBlockRange({
-    from: 14014260
+    from: 14035894
   })
   .addLog({
     address: [process.env.CONTRACT_ADDRESS!],

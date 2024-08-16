@@ -1,5 +1,5 @@
 import { TypeormDatabase } from "@subsquid/typeorm-store";
-import { Tokens, Trades, TradeSide } from "./model";
+import { Holders, Tokens, Trades, TradeSide } from "./model";
 import { processor } from "./processor";
 import { Contract, events } from "./abi/mint-mania";
 import Pusher from "pusher";
@@ -27,7 +27,23 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
       }
 
       if (events.TokenBought.is(lg)) {
-        const token = await ctx.store.findOneByOrFail(Tokens, { address: events.TokenBought.decode(lg).token });
+        const [token, holder] = await await Promise.all([
+          ctx.store.findOneByOrFail(Tokens, { address: events.TokenBought.decode(lg).token }),
+          ctx.store.findOneBy(Holders, { address: events.TokenBought.decode(lg).buyer })
+        ]);
+
+        if (holder) {
+          holder.balance += events.TokenBought.decode(lg).tokenAmount;
+          await ctx.store.upsert(holder);
+        } else {
+          const holder = new Holders({
+            address: events.TokenBought.decode(lg).buyer,
+            balance: events.TokenBought.decode(lg).tokenAmount,
+            token: token
+          });
+          await ctx.store.insert(holder);
+        }
+
         const trade = new Trades({
           address: events.TokenBought.decode(lg).buyer,
           amount: events.TokenBought.decode(lg).amount,
@@ -55,7 +71,18 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
       }
 
       if (events.TokenSold.is(lg)) {
-        const token = await ctx.store.findOneByOrFail(Tokens, { address: events.TokenSold.decode(lg).token });
+        const [token, holder] = await await Promise.all([
+          ctx.store.findOneByOrFail(Tokens, { address: events.TokenSold.decode(lg).token }),
+          ctx.store.findOneByOrFail(Holders, { address: events.TokenSold.decode(lg).seller })
+        ]);
+
+        holder.balance -= events.TokenSold.decode(lg).tokenAmount;
+        if (holder.balance <= 0) {
+          await ctx.store.remove(holder);
+        } else {
+          await ctx.store.upsert(holder);
+        }
+
         const trade = new Trades({
           address: events.TokenSold.decode(lg).seller,
           amount: events.TokenSold.decode(lg).amount,
