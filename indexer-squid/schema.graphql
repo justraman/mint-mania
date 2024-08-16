@@ -1,0 +1,42 @@
+enum TradeSide {
+  BUY
+  SELL
+}
+
+type Holder @entity {
+  id: ID! 
+  token: String!
+  address: String!
+  balance: BigInt!
+  tokenEntity: Token!
+}
+
+type Token @entity {
+  id: ID! 
+  address: String @unique
+  name: String!
+  symbol: String!
+  image: String
+  twitter: String
+  telegram: String
+  discord: String
+  website: String
+  createdAt: BigInt!
+  confirmed: Boolean!
+  txHash: String!
+  marketCap: BigInt!
+  holders: [Holder!]! @derivedFrom(field: "tokenEntity")
+  trades: [Trade!]! @derivedFrom(field: "tokenEntity")
+}
+
+type Trade @entity {
+  id: ID! 
+  token: String!
+  txHash: String!
+  amount: BigInt!
+  price: Int!
+  side: TradeSide!
+  address: String
+  time: BigInt!
+  tokenEntity: Token!
+}
