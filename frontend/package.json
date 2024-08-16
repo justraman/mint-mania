@@ -9,6 +9,7 @@
     "db:push": "drizzle-kit push --config db/drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config db/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config db/drizzle.config.ts",
+    "db:pull": "drizzle-kit pull --config db/drizzle.config.ts",
     "lint": "next lint"
   },
   "prisma": {
