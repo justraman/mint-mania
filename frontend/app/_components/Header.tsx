@@ -28,7 +28,7 @@ export default function Header() {
       <header className="py-16 bg-secondary">
         <div className="mx-auto flex flex-col md:flex-row md:h-16 max-w-screen-xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center text-primary" href="/">
-            <img src="./mania-logo.png" alt="mint-mania-logo" className="w-16 md:w-24" />
+            <img src="/mania-logo.png" alt="mint-mania-logo" className="w-16 md:w-24" />
             <span className="text-7xl ml-2">MINT MANIA</span>
           </Link>
 

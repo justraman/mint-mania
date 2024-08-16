@@ -133,6 +133,23 @@ contract MintMania is Ownable, Pausable {
             );
     }
 
+    function calculateSaleReturn(
+        address token,
+        uint256 amountToken
+    ) external view returns (uint256) {
+        require(bytes(tokens[token].name).length > 0, "Token does not exist");
+        require(amountToken > 0, "Amount must be greater than 0");
+        uint256 _supply = Token(token).totalSupply();
+
+        return
+            bondingCurve.calculateSaleReturn(
+                _supply,
+                usdtSuplly[token],
+                RR,
+                amountToken
+            );
+    }
+
     function getPrice(address token) public view returns (uint256) {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
 

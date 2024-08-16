@@ -33,16 +33,19 @@ export async function saveToken(formData: FormData) {
     })
   );
 
-  const token = await db.insert(tokens).values({
-    name: data.tokenName,
-    symbol: data.tokenSymbol,
-    txHash: data.txHash,
-    image: uploadResult.ETag,
-    twitter: data.twitter,
-    telegram: data.telegram,
-    discord: data.discord,
-    website: data.website
-  }).returning();
+  const token = await db
+    .insert(tokens)
+    .values({
+      name: data.tokenName,
+      symbol: data.tokenSymbol.toUpperCase(),
+      txHash: data.txHash,
+      image: data.imageUri,
+      twitter: data.twitter,
+      telegram: data.telegram,
+      discord: data.discord,
+      website: data.website
+    })
+    .returning();
 
   return token[0];
 }

@@ -105,4 +105,14 @@ contract MintManiaTest is Test {
         assertEq(Token(token).balanceOf(alice), 739720594);
         assertEq(mania.getPrice(token), 164);
     }
+
+    function test_calculateTokenReturn() public {
+        vm.startPrank(alice);
+        address token = address(0x8d2C17FAd02B7bb64139109c6533b7C2b9CADb81);
+        MintMania mania = createToken();
+
+        uint256 tokens = mania.calculateTokenReturn(token, 1000_000_000);
+
+        assertEq(tokens, 60271979);
+    }
 }

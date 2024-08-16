@@ -22,7 +22,14 @@ import { config } from "@/app/wagmi-config";
 const validation = z.object({
   tokenName: z.string().min(3).max(255),
   tokenSymbol: z.string().min(2).max(5),
-  image: typeof window !== "undefined" ? z.instanceof(FileList).refine((file) => file?.length == 1, "File is required.") : z.any(),
+  /// only allow 5mb images
+  image:
+    typeof window !== "undefined"
+      ? z
+          .instanceof(FileList)
+          .refine((file) => file?.length == 1, "File is required.")
+          .refine((file) => file.length > 0 && file[0].size < 3 * 1024 * 1024, "File size must be less than 3mb")
+      : z.any(),
   twitter: z.union([
     z.string().url("invalid twitter").startsWith("https://twitter.com/").optional(),
     z
