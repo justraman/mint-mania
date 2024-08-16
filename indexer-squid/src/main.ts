@@ -9,6 +9,5 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
       console.log(tx);
     }
   }
-
   // upsert batches of entities with batch-optimized ctx.store.save
 });

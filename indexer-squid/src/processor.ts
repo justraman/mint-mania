@@ -15,8 +15,7 @@ export const processor = new EvmBatchProcessor()
     url: assertNotNull(process.env.RPC_ETH_HTTP, "No RPC endpoint supplied"),
     rateLimit: 10
   })
-
-  .setFinalityConfirmation(1)
+  .setFinalityConfirmation(10)
   .setFields({
     transaction: {
       from: true,
