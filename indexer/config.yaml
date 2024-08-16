@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: MintMania Indexer
+networks:
+- id: 84532
+  start_block: 14014260
+  contracts:
+  - name: MintMania
+    address:
+    - 0x1800114068a460BFEDa8A262082f0311072391CF
+    handler: src/EventHandlers.ts
+    events:
+    - event: TokenBought(address token, address buyer, uint256 amount, uint256 price)
+    - event: TokenCreated(address token, string name, string symbol)
+    - event: TokenSold(address token, address seller, uint256 amount, uint256 price)

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { Input } from "@/components/ui/input";
 import { useAccount, useReadContract } from "wagmi";
@@ -9,6 +9,9 @@ import BigNumber from "bignumber.js";
 import { contractAddresses, usdtContractAddress } from "@/constants";
 import { formatUnits, parseUnits } from "viem";
 import MintMania from "@/abi/MintMania";
+import { readContract } from "@wagmi/core";
+import { config } from "@/app/wagmi-config";
+import debounce from "lodash/debounce";
 
 function formatUSDT(value: bigint | undefined) {
   if (!value) return "0.0";
@@ -20,6 +23,8 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const { open } = useWeb3Modal();
   const account = useAccount();
   const [inputValue, setInputValue] = useState("");
+  const [estimateTokenValue, setEstimateTokenValue] = useState<bigint | undefined>(undefined);
+  const [estimateUsdtValue, setEstimateUsdtValue] = useState<bigint | undefined>(undefined);
 
   const usdtBalance = useReadContract({
     abi: Erc20Abi,
@@ -28,12 +33,37 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
     args: [account.address ?? "0x"]
   });
 
-  const estimateTokenValue = useReadContract({
-    abi: MintMania.abi,
-    address: contractAddresses as `0x${string}`,
-    functionName: "calculateTokenReturn",
-    args: [(token.address as `0x${string}`) ?? "0x", parseUnits(inputValue, 6)]
-  });
+  const calculateEstimated = async () => {
+    if (!inputValue) return;
+    if (!token.address) return;
+    setEstimateTokenValue(undefined);
+    setEstimateUsdtValue(undefined);
+    try {
+      if (selectedButton === "buy") {
+        const value = parseUnits(inputValue, 6);
+        const estimate = await readContract(config, {
+          abi: MintMania.abi,
+          address: contractAddresses,
+          functionName: "calculateTokenReturn",
+          args: [token.address as `0x${string}`, value]
+        });
+        setEstimateTokenValue(estimate);
+      } else {
+        const value = parseUnits(inputValue, 0);
+        const estimate = await readContract(config, {
+          abi: MintMania.abi,
+          address: contractAddresses,
+          functionName: "calculateSaleReturn",
+          args: [token.address as `0x${string}`, value]
+        });
+        setEstimateUsdtValue(estimate);
+      }
+    } catch (error) {
+        console.error(error);
+    }
+  };
+
+  useEffect(debounce(calculateEstimated), [inputValue]);
 
   const tokenBalance = useReadContract({
     abi: Erc20Abi,
@@ -47,8 +77,6 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
       setInputValue(formatUnits(usdtBalance.data, 6));
     }
   };
-
-  console.log(estimateTokenValue);
 
   return (
     <div className="w-full border border-solid border-primary bg-black shadow-2xl relative p-6">
@@ -95,9 +123,14 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
                 {selectedButton == "buy" ? "USDT" : "Token"}
               </label>
             </div>
-            {estimateTokenValue.data && (
+            {estimateTokenValue && (
               <div className="text-md mt-1 ml-3 font-sans lowercase">
-                {formatUnits(estimateTokenValue.data, 0)} <span className="">{token.symbol}</span> 
+                {Intl.NumberFormat().format(estimateTokenValue)} <span className="">{token.symbol}</span>
+              </div>
+            )}
+            {estimateUsdtValue && (
+              <div className="text-md mt-1 ml-3 font-sans lowercase">
+                {Intl.NumberFormat().format(Number(estimateUsdtValue) / 1000_000)} <span className="">USDT</span>
               </div>
             )}
           </div>
