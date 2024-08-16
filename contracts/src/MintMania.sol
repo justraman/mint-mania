@@ -39,12 +39,14 @@ contract MintMania is Ownable, Pausable {
         address token,
         address buyer,
         uint256 amount,
+        uint256 tokenAmount,
         uint256 price
     );
     event TokenSold(
         address token,
         address seller,
         uint256 amount,
+        uint256 tokenAmount,
         uint256 price
     );
 
@@ -94,7 +96,13 @@ contract MintMania is Ownable, Pausable {
         require(Token(token).mint(msg.sender, amountToken) == true);
         usdtSuplly[token] += amount;
 
-        emit TokenBought(token, msg.sender, amount, getPrice(token));
+        emit TokenBought(
+            token,
+            msg.sender,
+            amount,
+            amountToken,
+            getPrice(token)
+        );
     }
 
     function sell(address token, uint256 amountToken) external whenNotPaused {
@@ -113,7 +121,7 @@ contract MintMania is Ownable, Pausable {
         require(stableToken.transfer(msg.sender, amount) == true);
         usdtSuplly[token] -= amount;
 
-        emit TokenSold(token, msg.sender, amount, getPrice(token));
+        emit TokenSold(token, msg.sender, amount, amountToken, getPrice(token));
     }
 
     function calculateTokenReturn(
@@ -178,15 +186,12 @@ contract MintMania is Ownable, Pausable {
         return total_tokens;
     }
 
-    function getToken(address token)
+    function getToken(
+        address token
+    )
         external
         view
-        returns (
-            string memory,
-            string memory,
-            string memory,
-            bool
-        )
+        returns (string memory, string memory, string memory, bool)
     {
         return (
             tokens[token].name,

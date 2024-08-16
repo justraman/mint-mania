@@ -79,7 +79,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   };
 
   useEffect(() => {
-    var channel = pusher.subscribe("trades");
+    var channel = pusher.subscribe(`trades_${token.address}`);
     channel.bind("new-trade", function (data: any) {
       usdtBalance.refetch();
       tokenBalance.refetch();
@@ -309,7 +309,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
                     step="0.01"
                   />
                   <label className="pointer-events-none absolute right-28  flex w-auto  select-none text-lg pleading-tight text-black ">
-                    {selectedButton == "buy" ? "USDT" : "Token"}
+                    {selectedButton == "buy" ? "USDT" : token.symbol}
                   </label>
                 </div>
 
@@ -353,7 +353,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
               </button>
             </div>
             <div className="flex items-center">
-              Token Balance:{" "}
+              {token.symbol} Balance:{" "}
               <span className="text-xl ml-4">
                 {tokenBalance.data ? formatUnits(tokenBalance.data, 0) : "0"} {token.symbol}
               </span>

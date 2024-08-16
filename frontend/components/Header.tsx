@@ -1,11 +1,10 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
-import ConnectButton from "../../components/web3/connect-button";
+import ConnectButton from "./web3/connect-button";
 
 export default function Header() {
   const [isHowItWorksModalOpen, setIsHowItWorksModalOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   const openHowItWorksModal = () => {
     setIsHowItWorksModalOpen(true);
@@ -13,14 +12,6 @@ export default function Header() {
 
   const closeHowItWorksModal = () => {
     setIsHowItWorksModalOpen(false);
-  };
-
-  const openWalletModal = () => {
-    setIsWalletModalOpen(true);
-  };
-
-  const closeWalletModal = () => {
-    setIsWalletModalOpen(false);
   };
 
   return (

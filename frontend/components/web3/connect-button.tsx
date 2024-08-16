@@ -3,13 +3,7 @@
 import React from "react";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
-
-function shortenAddress(address: string) {
-  if (address && address.length === 42) {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }
-  return address;
-}
+import { shortenAddress } from "@/lib/utils";
 
 export default function ConnectButton() {
   const { open } = useWeb3Modal();

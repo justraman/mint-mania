@@ -1,8 +1,8 @@
 import "./globals.css";
 import React from "react";
 import AppKitProvider from "./appkit-provider";
-import Header from "./_components/Header";
-import Footer from "./_components/Footer";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { headers } from "next/headers";
 import { cookieToInitialState } from "wagmi";
 import { config } from "./wagmi-config";

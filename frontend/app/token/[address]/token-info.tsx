@@ -6,10 +6,9 @@ import { tokens } from "@/db/schema";
 import { Globe } from "lucide-react";
 import Erc20Abi from "@/abi/Erc20";
 import Image from "next/image";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useReadContract } from "wagmi";
 import { pusher } from "@/pusher";
-import { formatUnits } from "viem";
 
 export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect }) {
   const totalSupply = useReadContract({
@@ -26,14 +25,13 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
   };
 
   useEffect(() => {
-    var channel = pusher.subscribe("trades");
+    var channel = pusher.subscribe(`trades_${token.address}`);
     channel.bind("new-trade", function (data: any) {
       totalSupply.refetch();
+      setMarketCap(data.mc);
     });
 
-    return () => {
-      pusher.unsubscribe("trades");
-    };
+    return () => {};
   }, [totalSupply]);
 
   return (
@@ -74,7 +72,10 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
                 )}
               </div>
               <div className="mt-4">
-                <p className="text-lg">Market Cap &nbsp; &nbsp; {(Number(token.marketCap)/1e6).toFixed(1)}{" USDT"}</p>
+                <p className="text-lg">
+                  Market Cap &nbsp; &nbsp; {(Number(marketCap) / 1e6).toFixed(1)}
+                  {" USDT"}
+                </p>
               </div>
               <div className="">
                 <p className="text-lg">Bonding Curve &nbsp; &nbsp; {bondingCurve(totalSupply.data)}%</p>

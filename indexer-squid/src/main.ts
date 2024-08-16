@@ -1,10 +1,9 @@
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import { Tokens, Trades, TradeSide } from "./model";
 import { processor } from "./processor";
-import { Contract, events, functions } from "./abi/mint-mania";
+import { Contract, events } from "./abi/mint-mania";
 import Pusher from "pusher";
 import { assertNotNull } from "@subsquid/util-internal";
-import { address } from "@subsquid/evm-codec";
 
 const pusher = new Pusher({
   appId: "1850618",
@@ -19,6 +18,8 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
     for (let lg of c.logs) {
       // decode and normalize the tx data
       if (events.TokenCreated.is(lg)) {
+        console.log("TokenCreated", events.TokenCreated.decode(lg).name);
+
         const token = await ctx.store.findOneByOrFail(Tokens, { txHash: lg.transaction!.hash });
         token.address = events.TokenCreated.decode(lg).token;
         token.confirmed = true;
@@ -45,14 +46,12 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
         token.marketCap = mc;
         await ctx.store.upsert(token);
 
-
-        if (ctx.isHead) {
-          pusher.trigger("trades", "new-trade", {
-            price: trade.price,
-            address: trade.address,
-            time: trade.time
-          });
-        }
+        pusher.trigger(`trades_${token.address}`, "new-trade", {
+          price: trade.price,
+          address: trade.address,
+          time: trade.time,
+          mc: mc.toString()
+        });
       }
 
       if (events.TokenSold.is(lg)) {
@@ -75,14 +74,12 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
         token.marketCap = mc;
         await ctx.store.upsert(token);
 
-        if (ctx.isHead) {
-          pusher.trigger("trades", "new-trade", {
-            price: trade.price,
-            address: trade.address,
-            time: trade.time,
-            mc: mc.toString()
-          });
-        }
+        pusher.trigger(`trades_${token.address}`, "new-trade", {
+          price: trade.price,
+          address: trade.address,
+          time: trade.time,
+          mc: mc.toString()
+        });
       }
     }
   }

@@ -14,7 +14,7 @@ export const processor = new EvmBatchProcessor()
   .setRpcEndpoint({
     url: assertNotNull(process.env.RPC_ETH_HTTP, "No RPC endpoint supplied")
   })
-  .setFinalityConfirmation(100)
+  .setFinalityConfirmation(10)
   .setFields({
     log: {
       topics: true,
