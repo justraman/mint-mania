@@ -18,8 +18,8 @@ export async function TokenHolders({ token }: { token: typeof tokens.$inferSelec
 
       {holders.map((hodler) => (
         <div className="flex justify-between my-4 text-lg" key={hodler.id}>
-          <a href={`https://sepolia.basescan.org/tx/${hodler.txHash}`}>{hodler.address}</a>
-          <span>{Number(BigInt(hodler.balance) / 10_000_000n).toFixed(3)}%</span>
+          <a target="_blank" href={`https://sepolia.basescan.org/address/${hodler.address}`}>{hodler.address}</a>
+          <span>{(Number(hodler.balance) / 10_000_000).toFixed(3)}%</span>
         </div>
       ))}
     </div>

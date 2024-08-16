@@ -24,12 +24,18 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
         token.address = events.TokenCreated.decode(lg).token;
         token.confirmed = true;
         await ctx.store.upsert(token);
+
+        pusher.trigger(`token`, "created", {
+          address: token.address
+        });
       }
 
       if (events.TokenBought.is(lg)) {
         const [token, holder] = await await Promise.all([
           ctx.store.findOneByOrFail(Tokens, { address: events.TokenBought.decode(lg).token }),
-          ctx.store.findOneBy(Holders, { address: events.TokenBought.decode(lg).buyer })
+          ctx.store.findOne(Holders, {
+            where: { token: { address: events.TokenBought.decode(lg).token }, address: events.TokenBought.decode(lg).buyer }
+          })
         ]);
 
         if (holder) {
@@ -39,7 +45,8 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
           const holder = new Holders({
             address: events.TokenBought.decode(lg).buyer,
             balance: events.TokenBought.decode(lg).tokenAmount,
-            token: token
+            token: token,
+            id: `${token.address}_${events.TokenBought.decode(lg).buyer}`
           });
           await ctx.store.insert(holder);
         }
@@ -71,9 +78,9 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
       }
 
       if (events.TokenSold.is(lg)) {
-        const [token, holder] = await await Promise.all([
+        const [token, holder] = await Promise.all([
           ctx.store.findOneByOrFail(Tokens, { address: events.TokenSold.decode(lg).token }),
-          ctx.store.findOneByOrFail(Holders, { address: events.TokenSold.decode(lg).seller })
+          ctx.store.findOneByOrFail(Holders, { token: { address: events.TokenSold.decode(lg).token }, address: events.TokenSold.decode(lg).seller })
         ]);
 
         holder.balance -= events.TokenSold.decode(lg).tokenAmount;

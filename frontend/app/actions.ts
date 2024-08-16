@@ -48,7 +48,7 @@ export async function saveToken(formData: FormData) {
       website: data.website,
       confirmed: false,
       address: null,
-      marketCap: "0",
+      marketCap: "1000_000_000",
       createdAt: new Date().toISOString()
     })
     .returning();

@@ -17,7 +17,6 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
     functionName: "totalSupply",
     args: []
   });
-  const [marketCap, setMarketCap] = React.useState(token.marketCap);
 
   const bondingCurve = (data: bigint | undefined) => {
     if (!data) return 0;
@@ -28,10 +27,11 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
     var channel = pusher.subscribe(`trades_${token.address}`);
     channel.bind("new-trade", function (data: any) {
       totalSupply.refetch();
-      setMarketCap(data.mc);
     });
 
-    return () => {};
+    return () => {
+      pusher.unsubscribe(`trades_${token.address}`);
+    };
   }, [totalSupply]);
 
   return (
@@ -41,7 +41,13 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
         <div className="flex gap-4">
           <div className="grid w-full items-center gap-6 grid-cols-2">
             <div className="w-36 h-36 mx-auto">
-              <Image height={144} width={144} src={`https://mintmania.s3.us-east-1.amazonaws.com/tokens/${token.image}`} alt="token-image" />
+              <Image
+                height={144}
+                width={144}
+                className="h-full object-contain"
+                src={`https://mintmania.s3.us-east-1.amazonaws.com/tokens/${token.image}`}
+                alt="token-image"
+              />
             </div>
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-bold">
@@ -73,7 +79,7 @@ export default function Tokeninfo({ token }: { token: typeof tokens.$inferSelect
               </div>
               <div className="mt-4">
                 <p className="text-lg">
-                  Market Cap &nbsp; &nbsp; {(Number(marketCap) / 1e6).toFixed(1)}
+                  Market Cap &nbsp; &nbsp; {(Number(token.marketCap) / 1e6).toFixed(1)}
                   {" USDT"}
                 </p>
               </div>

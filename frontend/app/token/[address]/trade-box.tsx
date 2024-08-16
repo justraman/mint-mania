@@ -24,6 +24,7 @@ import { config } from "@/app/wagmi-config";
 import debounce from "lodash/debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { pusher } from "@/pusher";
+import { useRouter } from "next/navigation";
 
 function formatUSDT(value: bigint | undefined) {
   if (!value) return "0.0";
@@ -34,6 +35,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const [selectedButton, setSelectedButton] = useState<"buy" | "sell">("buy");
   const { open } = useWeb3Modal();
   const account = useAccount();
+  const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = React.useState("");
   const [allowanceDialogOpen, setAllowanceDialogOpen] = React.useState(false);
@@ -77,27 +79,6 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    var channel = pusher.subscribe(`trades_${token.address}`);
-    channel.bind("new-trade", function (data: any) {
-      usdtBalance.refetch();
-      tokenBalance.refetch();
-    });
-
-    return () => {
-      pusher.unsubscribe("trades");
-    };
-  }, []);
-
-  useEffect(() => {
-    setEstimateTokenValue(undefined);
-    setEstimateUsdtValue(undefined);
-    const debouncedCalculateEstimated = debounce(calculateEstimated, 1000);
-    debouncedCalculateEstimated();
-    return debouncedCalculateEstimated.cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue]);
 
   useEffect(() => {
     setEstimateTokenValue(undefined);
@@ -241,6 +222,39 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
       setEstimateUsdtValue(undefined);
     }
   };
+
+  useEffect(() => {
+    var channel = pusher.subscribe(`trades_${token.address}`);
+    channel.bind("new-trade", function (data: any) {
+      usdtBalance.refetch();
+      tokenBalance.refetch();
+      router.refresh();
+    });
+
+    return () => {
+      pusher.unsubscribe("trades");
+    };
+  }, [token.address, tokenBalance, usdtBalance]);
+
+  useEffect(() => {
+    var channel = pusher.subscribe(`token`);
+    channel.bind("created", function (data: any) {
+      router.refresh();
+    });
+
+    return () => {
+      pusher.unsubscribe("token");
+    };
+  }, [router]);
+
+  useEffect(() => {
+    setEstimateTokenValue(undefined);
+    setEstimateUsdtValue(undefined);
+    const debouncedCalculateEstimated = debounce(calculateEstimated, 1000);
+    debouncedCalculateEstimated();
+    return debouncedCalculateEstimated.cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
 
   return (
     <>
