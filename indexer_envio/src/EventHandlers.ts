@@ -3,22 +3,10 @@
  */
 import {
   MintMania,
-  MintMania_OwnershipTransferred,
   MintMania_TokenBought,
   MintMania_TokenCreated,
   MintMania_TokenSold,
 } from "generated";
-
-MintMania.OwnershipTransferred.handler(async ({ event, context }) => {
-  const entity: MintMania_OwnershipTransferred = {
-    id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
-    previousOwner: event.params.previousOwner,
-    newOwner: event.params.newOwner,
-  };
-
-  context.MintMania_OwnershipTransferred.set(entity);
-});
-
 
 
 MintMania.TokenBought.handler(async ({ event, context }) => {

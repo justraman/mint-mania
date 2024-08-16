@@ -1,39 +1,21 @@
-type MintMania_OwnershipTransferred {
-  id: ID!
-  previousOwner: String!
-  newOwner: String!
+# To improve query performance, we strongly suggest adding indexes to any field that you plan to filter or sort by
+# Add the `@index` or `@index(unique: true)` annotation after any non-key field
+# https://academy.subquery.network/build/graphql.html#indexing-by-non-primary-key-field
+
+type Transfer @entity {
+  id: ID! # Transaction hash
+  blockHeight: BigInt
+  to: String!
+  from: String!
+  value: BigInt!
+  contractAddress: String!
 }
 
-type MintMania_Paused {
-  id: ID!
-  account: String!
+type Approval @entity {
+  id: ID! # Transaction hash
+  blockHeight: BigInt
+  owner: String!
+  spender: String!
+  value: BigInt!
+  contractAddress: String!
 }
-
-type MintMania_TokenBought {
-  id: ID!
-  token: String!
-  buyer: String!
-  amount: BigInt!
-  price: BigInt!
-}
-
-type MintMania_TokenCreated {
-  id: ID!
-  token: String!
-  name: String!
-  symbol: String!
-}
-
-type MintMania_TokenSold {
-  id: ID!
-  token: String!
-  seller: String!
-  amount: BigInt!
-  price: BigInt!
-}
-
-type MintMania_Unpaused {
-  id: ID!
-  account: String!
-}
-

@@ -1,31 +1,36 @@
 {
-  "name": "My Envio Indexer",
-  "version": "0.1.0",
+  "name": "mintmania",
+  "version": "0.0.1",
+  "description": "This project can be use as a starting point for developing your new Base Sepolia SubQuery project",
+  "main": "dist/index.js",
   "scripts": {
-    "clean": "tsc --clean",
-    "build": "tsc --build",
-    "watch": "tsc --watch",
-    "mocha": "ts-mocha test/**/*.ts",
-    "codegen": "envio codegen",
-    "dev": "envio dev",
-    "test": "pnpm mocha",
-    "start": "ts-node generated/src/Index.bs.js"
+    "build": "subql codegen && subql build",
+    "codegen": "subql codegen",
+    "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
+    "dev": "subql codegen && subql build && docker-compose pull && docker-compose up --remove-orphans",
+    "prepack": "rm -rf dist && npm run build",
+    "test": "subql build && subql-node-ethereum test",
+    "build:develop": "NODE_ENV=develop subql codegen && NODE_ENV=develop subql build"
+  },
+  "homepage": "https://github.com/subquery/ethereum-subql-starter",
+  "repository": "github:subquery/ethereum-subql-starter",
+  "files": [
+    "dist",
+    "schema.graphql",
+    "project.yaml"
+  ],
+  "author": "Raman Shekhawat",
+  "license": "MIT",
+  "dependencies": {
+    "@subql/types-ethereum": "latest",
+    "assert": "^2.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",    
-    "@types/mocha": "10.0.6",
-    "@types/node": "20.8.8",
-    "ts-mocha": "^10.0.0",
-    "ts-node": "10.9.1",
-    "typescript": "5.2.2",
-    "mocha": "10.2.0"
-  },
-  "dependencies": {
-    "chai": "4.3.10",
-    "envio": "2.0.1",
-    "ethers": "6.8.0"
-  },
-  "optionalDependencies": {
-    "generated": "./generated"
+    "@subql/cli": "latest",
+    "@subql/testing": "latest",
+    "@subql/node-ethereum": "latest",
+    "ethers": "^5.7.2",
+    "typescript": "latest",
+    "dotenv": "latest"
   }
 }
