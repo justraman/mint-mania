@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
@@ -7,10 +7,14 @@ import {IERC20} from "@openzeppelin-contracts-5.0.2/token/ERC20/IERC20.sol";
 import {MintMania} from "../src/MintMania.sol";
 import {Token} from "../src/Token.sol";
 import "@openzeppelin-contracts-5.0.2/access/Ownable.sol";
+import "uniswap-v3-core/contracts/UniswapV3Factory.sol";
+import "uniswap-v3-periphery/contracts/SwapRouter.sol";
+import "uniswap-v3-periphery/contracts/NonfungiblePositionManager.sol";
+
 
 contract MockUSDT is ERC20 {
     constructor(address owner) ERC20("Tether", "USDT", 6) {
-        _mint(owner, 68070_000_000); // 100000 usdt
+        _mint(owner, 100000_000_000); // 100000 usdt
     }
 }
 
@@ -22,6 +26,9 @@ contract MintManiaTest is Test {
     function setUp() public {
         usdt = new MockUSDT(alice);
         mintMania = new MintMania(alice, address(usdt), address(usdt));
+        factory = new UniswapV3Factory();
+        positionManager = new NonfungiblePositionManager(address(factory));
+        swapRouter = new SwapRouter(address(factory), address(positionManager));
     }
 
     function createToken() public returns (MintMania) {
