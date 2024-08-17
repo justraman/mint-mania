@@ -14,7 +14,7 @@ export default function Search({ onQuery, query }: { query: string | null; onQue
 
 
   return (
-    <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
+    <section className="mx-auto max-w-screen-xl mt-10 px-4 sm:px-6 lg:px-8 mb-10" id="services">
       <div className="mb-10 items-center flex flex-col gap-2">
         <h2 className="font-bold text-4xl tracking-wide">
           Search <span className="text-primary">Token</span>{" "}
