@@ -21,6 +21,10 @@ export const config = defaultWagmiConfig({
   chains,
   projectId,
   metadata,
+  auth: {
+    email: true,
+    socials: ["google", "github", "discord"]
+  },
   ssr: true,
   storage: createStorage({
     storage: cookieStorage
