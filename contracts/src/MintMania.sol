@@ -6,10 +6,10 @@ import "./BondingCurve.sol";
 import "@openzeppelin-contracts-5.0.2/access/Ownable.sol";
 import "@openzeppelin-contracts-5.0.2/utils/Pausable.sol";
 import "@openzeppelin-contracts-5.0.2/token/ERC20/IERC20.sol";
-import '@uniswap-v3-periphery-1.4.4/contracts/interfaces/ISwapRouter.sol';
-import '@uniswap-v3-periphery-1.4.4/contracts/interfaces/INonfungiblePositionManager.sol';
-import '@uniswap-v3-core-1.0.0/contracts/interfaces/IERC20Minimal.sol';
-import '@uniswap-v3-core-1.0.0/contracts/libraries/TransferHelper.sol';
+import "@uniswap-v3-periphery-1.4.4/contracts/interfaces/ISwapRouter.sol";
+import "@uniswap-v3-periphery-1.4.4/contracts/interfaces/INonfungiblePositionManager.sol";
+import "uniswap-v3-core/contracts/interfaces/IERC20Minimal.sol";
+import "";
 
 struct TokenInfo {
     string name;
@@ -22,21 +22,24 @@ contract MintMania is Ownable, Pausable {
     uint256 public constant MAX_SUPPLY = 1000_000_000; // 1 billion
     uint256 public constant INITIAL_SUPPLY = 200_000_000; // 20 million (20% of max supply)
     uint256 public constant INITIAL_COLLATORAL = 1000_000_000; // 1k usdt
-    uint32 private constant RR = 380020; // part per milliom
+    uint32 private constant RR = 380020; // part per million
 
     IERC20 public immutable stableToken;
     BancorBondingCurve private immutable bondingCurve;
-    
+    INonfungiblePositionManager private immutable positionManager;
 
     mapping(address => TokenInfo) private tokens;
-    mapping(address => mapping(address => uint256)) private balances;
-    mapping(address => uint256) private tokenEthBalance;
-    mapping(address => uint256) private usdtSuplly;
+    mapping(address => uint256) private usdtSupply;
     address[] private total_tokens;
 
-    constructor(address owner, address _usdt) Ownable(owner) {
+    constructor(
+        address owner,
+        address _usdt,
+        address _positionManager
+    ) Ownable(owner) {
         stableToken = IERC20(_usdt);
         bondingCurve = new BancorBondingCurve();
+        positionManager = INonfungiblePositionManager(_positionManager);
     }
 
     event TokenCreated(address token, string name, string symbol);
@@ -68,7 +71,7 @@ contract MintMania is Ownable, Pausable {
         Token token = new Token(name, symbol, INITIAL_SUPPLY, MAX_SUPPLY);
         tokens[address(token)] = TokenInfo(name, symbol, uri, false);
         total_tokens.push(address(token));
-        usdtSuplly[address(token)] = INITIAL_COLLATORAL;
+        usdtSupply[address(token)] = INITIAL_COLLATORAL;
         emit TokenCreated(address(token), name, symbol);
     }
 
@@ -81,7 +84,7 @@ contract MintMania is Ownable, Pausable {
         uint256 _supply = Token(token).totalSupply();
         uint256 amountToken = bondingCurve.calculatePurchaseReturn(
             _supply,
-            usdtSuplly[token],
+            usdtSupply[token],
             RR,
             amount
         );
@@ -101,7 +104,11 @@ contract MintMania is Ownable, Pausable {
         );
 
         require(Token(token).mint(msg.sender, amountToken) == true);
-        usdtSuplly[token] += amount;
+        usdtSupply[token] += amount;
+
+        if (usdtSupply[token] > 69069_000_000) {
+            launch(token);
+        }
 
         emit TokenBought(
             token,
@@ -120,14 +127,14 @@ contract MintMania is Ownable, Pausable {
         uint256 _supply = Token(token).totalSupply();
         uint256 amount = bondingCurve.calculateSaleReturn(
             _supply,
-            usdtSuplly[token],
+            usdtSupply[token],
             RR,
             amountToken
         );
 
         require(Token(token).burn(msg.sender, amountToken) == true);
         require(stableToken.transfer(msg.sender, amount) == true);
-        usdtSuplly[token] -= amount;
+        usdtSupply[token] -= amount;
 
         emit TokenSold(token, msg.sender, amount, amountToken, getPrice(token));
     }
@@ -143,7 +150,7 @@ contract MintMania is Ownable, Pausable {
         return
             bondingCurve.calculatePurchaseReturn(
                 _supply,
-                usdtSuplly[token],
+                usdtSupply[token],
                 RR,
                 amount
             );
@@ -155,12 +162,13 @@ contract MintMania is Ownable, Pausable {
     ) external view returns (uint256) {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
         require(amountToken > 0, "Amount must be greater than 0");
+        require(tokens[token].launched == false, "Token is launched");
         uint256 _supply = Token(token).totalSupply();
 
         return
             bondingCurve.calculateSaleReturn(
                 _supply,
-                usdtSuplly[token],
+                usdtSupply[token],
                 RR,
                 amountToken
             );
@@ -172,19 +180,64 @@ contract MintMania is Ownable, Pausable {
         uint256 _supply = Token(token).totalSupply();
 
         return
-            bondingCurve.calculateSaleReturn(_supply, usdtSuplly[token], RR, 1);
+            bondingCurve.calculateSaleReturn(_supply, usdtSupply[token], RR, 1);
     }
 
     function getMarketCap(address token) external view returns (uint256) {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
-        return usdtSuplly[token];
+        return usdtSupply[token];
     }
 
-    function launch(address token) external onlyOwner {
+    function launch(address token) private {
         require(bytes(tokens[token].name).length > 0, "Token does not exist");
         require(tokens[token].launched == false, "Token is already launched");
 
+        // Define the amounts to add to liquidity
+        uint256 tokenAmount = 200_000_000;
+        uint256 usdtAmount = usdtSupply[token];
+
+        require(
+            Token(token).balanceOf(address(this)) >= tokenAmount,
+            "Insufficient token balance"
+        );
+        require(
+            stableToken.balanceOf(address(this)) >= usdtAmount,
+            "Insufficient USDT balance"
+        );
+
+        TransferHelper.safeApprove(
+            token,
+            address(positionManager),
+            tokenAmount
+        );
+
+        TransferHelper.safeApprove(
+            address(stableToken),
+            address(positionManager),
+            usdtAmount
+        );
+
+        // Mint the liquidity position on Uniswap V3
+        INonfungiblePositionManager.MintParams
+            memory params = INonfungiblePositionManager.MintParams({
+                token0: token,
+                token1: address(stableToken),
+                fee: 1000,
+                tickLower: -683108,
+                tickUpper: 887220,
+                amount0Desired: tokenAmount,
+                amount1Desired: usdtAmount,
+                amount0Min: 0,
+                amount1Min: 0,
+                recipient: address(this),
+                deadline: block.timestamp + 1 minutes
+            });
+
+        (uint256 lpTokenId, , , ) = positionManager.mint(params);
+
+        positionManager.burn(lpTokenId);
         tokens[token].launched = true;
+        emit TokenLaunched(token);
     }
 
     function getTokens() external view returns (address[] memory) {
