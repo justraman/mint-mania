@@ -21,7 +21,7 @@ contract MintManiaTest is Test {
 
     function setUp() public {
         usdt = new MockUSDT(alice);
-        mintMania = new MintMania(alice, address(usdt));
+        mintMania = new MintMania(alice, address(usdt), address(usdt));
     }
 
     function createToken() public returns (MintMania) {

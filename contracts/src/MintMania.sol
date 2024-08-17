@@ -9,6 +9,7 @@ import "@openzeppelin-contracts-5.0.2/token/ERC20/IERC20.sol";
 import "uniswap-v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "uniswap-v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 import "uniswap-v3-core/contracts/interfaces/IERC20Minimal.sol";
+import { TransferHelper } from "uniswap-v3-periphery/contracts/libraries/TransferHelper.sol";
 
 struct TokenInfo {
     string name;
