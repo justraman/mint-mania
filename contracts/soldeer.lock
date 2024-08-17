@@ -28,3 +28,9 @@ name = "@uniswap-v3-periphery"
 version = "1.4.4"
 source = "https://soldeer-revisions.s3.amazonaws.com/@uniswap-v3-periphery/1_4_4_22-01-2024_13:20:51_v3-periphery.zip"
 checksum = "f1ce151585a084bb3ec6fb9cbce4520924d41398c3ce8979169de6f7f70d6a81"
+
+[[dependencies]]
+name = "@uniswap-v3-core"
+version = "1.0.0"
+source = "https://soldeer-revisions.s3.amazonaws.com/@uniswap-v3-core/1_0_0_22-01-2024_13:19:51_v3-core.zip"
+checksum = "ba8c723c9e29313d1bec2d3cf924b65d91ee45b3fe279bab69af99734f1ccc9c"

@@ -6,6 +6,10 @@ import "./BondingCurve.sol";
 import "@openzeppelin-contracts-5.0.2/access/Ownable.sol";
 import "@openzeppelin-contracts-5.0.2/utils/Pausable.sol";
 import "@openzeppelin-contracts-5.0.2/token/ERC20/IERC20.sol";
+import '@uniswap-v3-periphery-1.4.4/contracts/interfaces/ISwapRouter.sol';
+import '@uniswap-v3-periphery-1.4.4/contracts/interfaces/INonfungiblePositionManager.sol';
+import '@uniswap-v3-core-1.0.0/contracts/interfaces/IERC20Minimal.sol';
+import '@uniswap-v3-core-1.0.0/contracts/libraries/TransferHelper.sol';
 
 struct TokenInfo {
     string name;
@@ -22,6 +26,7 @@ contract MintMania is Ownable, Pausable {
 
     IERC20 public immutable stableToken;
     BancorBondingCurve private immutable bondingCurve;
+    
 
     mapping(address => TokenInfo) private tokens;
     mapping(address => mapping(address => uint256)) private balances;
