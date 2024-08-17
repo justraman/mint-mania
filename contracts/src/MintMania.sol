@@ -6,10 +6,9 @@ import "./BondingCurve.sol";
 import "@openzeppelin-contracts-5.0.2/access/Ownable.sol";
 import "@openzeppelin-contracts-5.0.2/utils/Pausable.sol";
 import "@openzeppelin-contracts-5.0.2/token/ERC20/IERC20.sol";
-import "@uniswap-v3-periphery-1.4.4/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap-v3-periphery-1.4.4/contracts/interfaces/INonfungiblePositionManager.sol";
+import "uniswap-v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import "uniswap-v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 import "uniswap-v3-core/contracts/interfaces/IERC20Minimal.sol";
-import "";
 
 struct TokenInfo {
     string name;
