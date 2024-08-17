@@ -10,13 +10,16 @@ export default function RetroGrid({
   return (
     <div
       className={cn(
+
         "pointer-events-none absolute size-full overflow-hidden  [perspective:200px]",
+
         className,
       )}
       style={{ "--grid-angle": `${angle}deg` } as React.CSSProperties}
     >
       {/* Grid */}
       <div className="absolute inset-0 [z-index:1] opacity-50 [transform:rotateX(var(--grid-angle))]">
+
         <div
           className={cn(
             "animate-grid",
@@ -25,12 +28,15 @@ export default function RetroGrid({
 
             // Dark styles
             "[background-image:linear-gradient(to_right,rgba(255,255,255,0.2)_1px,transparent_0),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_0)]",
+
           )}
         />
       </div>
 
       {/* Background Gradient */}
+
       <div className="absolute inset-0 bg-black [z-index:0]" />
+
     </div>
   );
 }
