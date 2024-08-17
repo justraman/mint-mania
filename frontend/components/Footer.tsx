@@ -1,5 +1,6 @@
 import { Github } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
 
 function Footer() {
@@ -9,7 +10,7 @@ function Footer() {
         <div className="sm:flex sm:items-center sm:justify-between">
           <div className="flex justify-center text-teal-600 sm:justify-start">
             <Link className="flex items-center text-primary" href="/">
-              <img src="/mania-logo.png" alt="mint-mania-logo" className="w-9" />
+              <Image src="/mania-logo.png" alt="mint-mania-logo" width={36} height={36} className="w-9" />
               <span className="text-4xl ml-2">MINT MANIA</span>
             </Link>
           </div>

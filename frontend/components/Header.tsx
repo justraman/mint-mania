@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
+import Image from "next/image";
 import ConnectButton from "./web3/connect-button";
 
 export default function Header() {
@@ -19,7 +20,7 @@ export default function Header() {
       <header className="py-8 bg-secondary">
         <div className="mx-auto flex flex-col md:flex-row md:h-16 max-w-screen-xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center text-primary" href="/">
-            <img src="/mania-logo.png" alt="mint-mania-logo" className="w-16 md:w-24" />
+            <Image src="/mania-logo.png" alt="mint-mania-logo" width={96} height={96}  className="w-16 md:w-24" />
             <span className="text-7xl ml-2">MINT MANIA</span>
           </Link>
 
@@ -46,11 +47,11 @@ export default function Header() {
             <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%] md:-right-2 md:w-[102%] xs:h-[102%] bg-white" />
             <h2 className="text-4xl font-bold mb-4 text-center">How It Works</h2>
             <div className="text-white h-96 overflow-auto scrollbar-hide text-2xl">
-              <p>1. Provide your token's name, symbol, and any relevant social media links.</p>
+              <p>1. Provide your token&apos;s name, symbol, and any relevant social media links.</p>
               <p>2. Select an image or GIF for your token.</p>
               <p>3. Deploy your token on Base!</p>
               <p className="mt-2">
-                After deployment, you'll be taken to your token's dedicated page, where you can track its chart and launch details. Share the page
+                After deployment, you&apos;ll be taken to your token&apos;s dedicated page, where you can track its chart and launch details. Share the page
                 link to draw in buyers!
               </p>
               <p className="mt-2">
@@ -67,7 +68,7 @@ export default function Header() {
               onClick={closeHowItWorksModal}
               className="p-2 px-3 border-[1px] border-primary text-primary text-center mt-2 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
             >
-              Let's Go!
+              Let&apos;s Go!
             </button>
           </div>
         </div>
