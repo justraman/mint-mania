@@ -2,7 +2,8 @@
   "name": "squid-evm-template",
   "private": true,
   "scripts": {
-    "build": "rm -rf lib && tsc"
+    "build": "rm -rf lib && tsc",
+    "start": "node -r dotenv/config lib/main.js"
   },
   "dependencies": {
     "@subsquid/evm-abi": "^0.3.0",
