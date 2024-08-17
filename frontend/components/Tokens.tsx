@@ -1,16 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import Search from "./Search";
 import Image from "next/image";
 import type { tokens as Token } from "@/db/schema";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)[] }) {
+export default function Tokens({
+  tokens,
+}: {
+  tokens: (typeof Token.$inferSelect)[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [sortCriteria, setSortCriteria] = useState("name");
 
   const onQuery = (_query: string) => {
     if (!_query) {
@@ -21,13 +26,29 @@ export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)
 
   const query = searchParams.get("q");
 
+  const sortedTokens = [...tokens].sort((a, b) => {
+    if (sortCriteria === "name") {
+      return a.name.localeCompare(b.name);
+    } else if (sortCriteria === "symbol") {
+      return a.symbol.localeCompare(b.symbol);
+    } else if (sortCriteria === "price") {
+      return Number(b.marketCap) - Number(a.marketCap);
+    }
+    return 0;
+  });
+
   if (tokens.length === 0 && query) {
     return (
       <>
         <Search onQuery={onQuery} query={query} />
-        <section className="mx-auto text-center max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
+        <section
+          className="mx-auto text-center max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
+          id="services"
+        >
           <div className="">
-            <h1 className="text-4xl font-bold text-center text-white">No tokens found for this query: {query}</h1>
+            <h1 className="text-4xl font-bold text-center text-white">
+              No tokens found for this query: {query}
+            </h1>
           </div>
         </section>
       </>
@@ -37,15 +58,29 @@ export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)
   return (
     <>
       <Search onQuery={onQuery} query={query} />
-      <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4">
-          {tokens.map((token) => (
+      <section
+        className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
+        id="services"
+      >
+        <div className="flex justify-end mb-4">
+          <select
+            className="bg-black text-white p-3"
+            value={sortCriteria}
+            onChange={(e) => setSortCriteria(e.target.value)}
+          >
+            <option value="name">Sort by Name</option>
+            <option value="symbol">Sort by Symbol</option>
+            <option value="price">Sort by Price</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4 justify-items-center">
+          {sortedTokens.map((token) => (
             <Link href={`/token/${token.address}`} key={token.id}>
               <article
                 key={token.id}
-                className="hover:animate-background bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 p-0.5 shadow-xl transition hover:bg-[length:400%_400%] hover:shadow-sm hover:[animation-duration:_4s] flex justify-center"
+                className="hover:animate-background max-w-full bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 p-0.5 shadow-xl transition hover:bg-[length:400%_400%] hover:shadow-sm hover:[animation-duration:_4s] flex justify-center"
               >
-                <div className="bg-black p-4 w-full max-w-[250px]">
+                <div className="bg-black p-4 w-full max-w-full">
                   <div className="w-36 h-36 bg-gray-200 flex items-center justify-center overflow-hidden mx-auto">
                     <Image
                       width={144}
@@ -55,8 +90,12 @@ export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="mt-0.5 text-2xl font-medium text-white text-center break-words">{token.name}</h3>
-                  <h3 className="mt-0.5 text-2xl font-medium text-blue-500 text-center break-words">{token.symbol}</h3>
+                  <h3 className="mt-0.5 text-2xl font-medium text-white text-center break-words">
+                    {token.name}
+                  </h3>
+                  <h3 className="mt-0.5 text-2xl font-medium text-blue-500 text-center break-words">
+                    {token.symbol}
+                  </h3>
                   <h3 className="mt-0.5 text-2xl font-medium text-green-500 text-center">
                     {" "}
                     {(Number(token.marketCap) / 1e6).toFixed(1)}
