@@ -2,6 +2,7 @@ import * as React from "react";
 import CreateToken from "@/components/create-token";
 import Tokens from "../components/Tokens";
 import { db } from "@/db";
+import TokenPodium from "@/components/TokenPodium";
 
 export const revalidate = 0;
 
@@ -14,6 +15,7 @@ export default async function Home({ searchParams }: { searchParams: { [key: str
   return (
     <div>
       <CreateToken />
+      <TokenPodium tokens={tokens} />
       <Tokens tokens={tokens} />
     </div>
   );
