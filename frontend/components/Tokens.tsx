@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import Search from "./Search";
 import Image from "next/image";
 import type { tokens as Token } from "@/db/schema";
@@ -15,6 +15,7 @@ export default function Tokens({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [sortCriteria, setSortCriteria] = useState("name");
 
   const onQuery = (_query: string) => {
     if (!_query) {
@@ -24,6 +25,17 @@ export default function Tokens({
   };
 
   const query = searchParams.get("q");
+
+  const sortedTokens = [...tokens].sort((a, b) => {
+    if (sortCriteria === "name") {
+      return a.name.localeCompare(b.name);
+    } else if (sortCriteria === "symbol") {
+      return a.symbol.localeCompare(b.symbol);
+    } else if (sortCriteria === "price") {
+      return Number(b.marketCap) - Number(a.marketCap);
+    }
+    return 0;
+  });
 
   if (tokens.length === 0 && query) {
     return (
@@ -50,8 +62,19 @@ export default function Tokens({
         className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
         id="services"
       >
+        <div className="flex justify-end mb-4">
+          <select
+            className="bg-black text-white p-3"
+            value={sortCriteria}
+            onChange={(e) => setSortCriteria(e.target.value)}
+          >
+            <option value="name">Sort by Name</option>
+            <option value="symbol">Sort by Symbol</option>
+            <option value="price">Sort by Price</option>
+          </select>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4 justify-items-center">
-          {tokens.map((token) => (
+          {sortedTokens.map((token) => (
             <Link href={`/token/${token.address}`} key={token.id}>
               <article
                 key={token.id}
