@@ -20,7 +20,7 @@ export default function Header() {
       <header className="py-8 bg-secondary">
         <div className="mx-auto flex flex-col md:flex-row md:h-16 max-w-screen-xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center text-primary" href="/">
-            <Image src="/mania-logo.png" alt="mint-mania-logo" width={96} height={96}  className="w-16 md:w-24" />
+            <Image src="/mania-logo.png" alt="mint-mania-logo" width={96} height={96} className="w-16 md:w-24" />
             <span className="text-7xl ml-2">MINT MANIA</span>
           </Link>
 
@@ -51,8 +51,8 @@ export default function Header() {
               <p>2. Select an image or GIF for your token.</p>
               <p>3. Deploy your token on Base!</p>
               <p className="mt-2">
-                After deployment, you&apos;ll be taken to your token&apos;s dedicated page, where you can track its chart and launch details. Share the page
-                link to draw in buyers!
+                After deployment, you&apos;ll be taken to your token&apos;s dedicated page, where you can track its chart and launch details. Share
+                the page link to draw in buyers!
               </p>
               <p className="mt-2">
                 <p>
@@ -61,6 +61,10 @@ export default function Header() {
                     bonding curve
                   </a>{" "}
                   , which means early buyers are incentivized by getting the token at a cheaper price.
+                </p>
+                <p>
+                  When the MarketCap reaches $69069 the bonding curve will be disabled and the token will be available for trading on the UniSwap.
+                  [Not Available on Testnet]
                 </p>
               </p>
             </div>
