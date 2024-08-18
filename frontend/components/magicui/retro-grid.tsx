@@ -16,7 +16,7 @@ export default function RetroGrid({
       style={{ "--grid-angle": `${angle}deg` } as React.CSSProperties}
     >
       {/* Grid */}
-      <div className="absolute inset-0 [z-index:1] opacity-50 [transform:rotateX(var(--grid-angle))]">
+      <div className="absolute inset-0 [z-index:1] opacity-80 [transform:rotateX(var(--grid-angle))]">
         <div
           className={cn(
             "animate-grid",
