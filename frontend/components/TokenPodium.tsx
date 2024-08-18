@@ -19,7 +19,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
           The <span className="text-primary">Top 3</span>
         </h2>
 
-        <div className="flex justify-center h-full items-end gap-8">
+        <div className="flex justify-center h-full items-end gap-2 md:gap-8">
           {/* Second Place - Silver */}
           <div className="flex flex-col items-center">
             <Link href={`/token/${tokens[1].address}`}>

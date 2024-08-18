@@ -133,7 +133,7 @@ export default function CreateToken() {
     <>
       <section className="w-full mx-auto px-4 sm:px-6 duration-500 transition-transform lg:px-8" id="services">
         <div className="w-fit mt-4 mx-auto">
-          <div className="w-full flex items-center px-28 flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
+          <div className="w-full flex items-center px-16 md:px-28 flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
             <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%]  md:-right-2 md:w-[102%] xs:h-[102%]  bg-white" />
 
             <h2 className="text-4xl font-bold mb-4 text-center">Create Token</h2>

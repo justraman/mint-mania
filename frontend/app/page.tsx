@@ -27,7 +27,7 @@ export default async function Home({ searchParams }: { searchParams: { [key: str
 
   return (
     <div>
-      <div className="flex flex-1 w-full flex-col gap-8 container lg:flex-row-reverse mt-8 mb-16 justify-center items-end ">
+      <div className="flex flex-1 w-full flex-col gap-2 xl:gap-8 container lg:flex-row-reverse mt-8 mb-16 justify-center items-end ">
         <CreateToken />
         <TokenPodium tokens={topTokens} />
       </div>
