@@ -25,8 +25,6 @@ export default async function Home({ searchParams }: { searchParams: { [key: str
     })
   ]);
 
-  console.log(tokens);
-
   return (
     <div>
       <div className="flex flex-1 w-full flex-col gap-8 container lg:flex-row-reverse mt-8 mb-16 justify-center items-end ">

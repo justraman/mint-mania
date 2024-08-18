@@ -69,7 +69,7 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        grid: "grid 15s linear infinite",
+        grid: "grid 60s linear infinite",
       }
     }
   },
