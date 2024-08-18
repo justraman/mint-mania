@@ -17,7 +17,9 @@ export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)
 
   const onQuery = (_query: string) => {
     if (!_query) {
-      return router.push("/");
+      return router.push("/", {
+        scroll: false
+      });
     }
     router.push(`/?q=${_query}`, {
       scroll: false
