@@ -11,8 +11,9 @@ import { useRouter } from "next/navigation";
 export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [sortCriteria, setSortCriteria] = useState(searchParams.get("sort") ? searchParams.get("sort") : "created_at:desc");
+  const sort = searchParams.get("sort");
   const query = searchParams.get("q");
+  const [sortCriteria, setSortCriteria] = useState(sort ? sort : "created_at:desc");
 
   const onQuery = (_query: string) => {
     if (!_query) {
