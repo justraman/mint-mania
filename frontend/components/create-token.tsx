@@ -31,7 +31,7 @@ const validation = z.object({
           .refine((file) => file.length > 0 && file[0].size < 3 * 1024 * 1024, "File size must be less than 3mb")
       : z.any(),
   twitter: z.union([
-    z.string().url("invalid twitter").startsWith("https://twitter.com/").optional(),
+    z.string().url("invalid twitter").startsWith("https://x.com/").optional(),
     z
       .string()
       .max(0)
@@ -80,7 +80,6 @@ export default function CreateToken() {
 
   const [hasSocials, setHasSocials] = React.useState(false);
   const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
-  const [showCreateToken, setShowCreateToken] = React.useState(false);
   const [error, setError] = React.useState("");
   const imageRef = form.register("image");
 
@@ -132,29 +131,11 @@ export default function CreateToken() {
 
   return (
     <>
-      {!showCreateToken && (
-        <div className="mx-auto text-center">
-          <button
-            onClick={() => setShowCreateToken(true)}
-            type="submit"
-            className="p-2 my-8 px-14 border-[1px] border-primary text-primary text-center mt-4 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
-          >
-            Create Token
-          </button>
-        </div>
-      )}
-      <section
-        className={
-          showCreateToken ? "w-auto mx-auto px-4 sm:px-6 duration-500 transition-transform lg:px-8 mb-10" : "-translate-y-8 max-h-0 overflow-hidden"
-        }
-        id="services"
-      >
+      <section className="w-full mx-auto px-4 sm:px-6 duration-500 transition-transform lg:px-8" id="services">
         <div className="w-fit mt-4 mx-auto">
           <div className="w-full flex items-center px-28 flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
             <div className="absolute top-0 -right-3 -z-10 w-[101%] h-[103%]  md:-right-2 md:w-[102%] xs:h-[102%]  bg-white" />
-            <span role="button" onClick={() => setShowCreateToken(false)} className="absolute top-4 right-4 cursor-pointer">
-              <X />
-            </span>
+
             <h2 className="text-4xl font-bold mb-4 text-center">Create Token</h2>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)}>

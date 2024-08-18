@@ -59,9 +59,7 @@ export default async function Token({ params }: { params: { address: string } })
           <Tokeninfo token={token} />
         </div>
         <div className="lg:col-span-2">
-          <Suspense fallback={<div>Loading...</div>}>
-            <TokenActivity token={token} />
-          </Suspense>
+          <TokenActivity token={token} />
         </div>
         <div>
           <TokenHolders token={token} />

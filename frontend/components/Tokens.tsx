@@ -8,47 +8,51 @@ import type { tokens as Token } from "@/db/schema";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-export default function Tokens({
-  tokens,
-}: {
-  tokens: (typeof Token.$inferSelect)[];
-}) {
+export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [sortCriteria, setSortCriteria] = useState("name");
+  const [sortCriteria, setSortCriteria] = useState(searchParams.get("sort") ? searchParams.get("sort") : "created_at:desc");
+  const query = searchParams.get("q");
 
   const onQuery = (_query: string) => {
     if (!_query) {
       return router.push("/");
     }
-    router.push(`/?q=${_query}`);
+    router.push(`/?q=${_query}`, {
+      scroll: false
+    });
   };
 
-  const query = searchParams.get("q");
-
-  const sortedTokens = [...tokens].sort((a, b) => {
-    if (sortCriteria === "name") {
-      return a.name.localeCompare(b.name);
-    } else if (sortCriteria === "symbol") {
-      return a.symbol.localeCompare(b.symbol);
-    } else if (sortCriteria === "price") {
-      return Number(b.marketCap) - Number(a.marketCap);
+  const onSort = (column: string) => {
+    setSortCriteria(column);
+    router.refresh();
+    if (column === "created_at:desc") {
+      if (query) {
+        return router.push(`/?q=${query}`, {
+          scroll: false
+        });
+      }
+      return router.push(`/`, {
+        scroll: false
+      });
     }
-    return 0;
-  });
+    if (query) {
+      return router.push(`/?q=${query}&sort=${column}`, {
+        scroll: false
+      });
+    }
+    return router.push(`/?sort=${column}`, {
+      scroll: false
+    });
+  };
 
   if (tokens.length === 0 && query) {
     return (
       <>
         <Search onQuery={onQuery} query={query} />
-        <section
-          className="mx-auto text-center max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
-          id="services"
-        >
+        <section className="mx-auto text-center max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
           <div className="">
-            <h1 className="text-4xl font-bold text-center text-white">
-              No tokens found for this query: {query}
-            </h1>
+            <h1 className="text-4xl font-bold text-center text-white">No tokens found for this query: {query}</h1>
           </div>
         </section>
       </>
@@ -58,23 +62,16 @@ export default function Tokens({
   return (
     <>
       <Search onQuery={onQuery} query={query} />
-      <section
-        className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10"
-        id="services"
-      >
+      <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
         <div className="flex justify-start mb-4">
-          <select
-            className="bg-black text-white p-3"
-            value={sortCriteria}
-            onChange={(e) => setSortCriteria(e.target.value)}
-          >
-            <option value="name">Sort by Name</option>
-            <option value="symbol">Sort by Symbol</option>
-            <option value="price">Sort by Price</option>
+          <select className="bg-black text-white p-3" value={sortCriteria} onChange={(e) => onSort(e.target.value)}>
+            <option value="name:asc">A-Z</option>
+            <option value="created_at:desc">Recent</option>
+            <option value="market_cap:desc">Market Cap</option>
           </select>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-4 justify-items-center">
-          {sortedTokens.map((token) => (
+          {tokens.map((token) => (
             <Link href={`/token/${token.address}`} key={token.id}>
               <article
                 key={token.id}
@@ -90,12 +87,8 @@ export default function Tokens({
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="mt-0.5 text-2xl font-medium text-white text-center break-words">
-                    {token.name}
-                  </h3>
-                  <h3 className="mt-0.5 text-2xl font-medium text-blue-500 text-center break-words">
-                    {token.symbol}
-                  </h3>
+                  <h3 className="mt-0.5 text-2xl font-medium text-white text-center break-words">{token.name}</h3>
+                  <h3 className="mt-0.5 text-2xl font-medium text-blue-500 text-center break-words">{token.symbol}</h3>
                   <h3 className="mt-0.5 text-2xl font-medium text-green-500 text-center">
                     {" "}
                     {(Number(token.marketCap) / 1e6).toFixed(1)}
