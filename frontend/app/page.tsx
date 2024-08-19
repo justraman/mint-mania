@@ -3,7 +3,7 @@ import CreateToken from "@/components/create-token";
 import Tokens from "../components/Tokens";
 import { db } from "@/db";
 import TokenPodium from "@/components/TokenPodium";
-import { AnyColumn } from "drizzle-orm";
+import { AnyColumn, eq } from "drizzle-orm";
 
 export const revalidate = 0;
 
@@ -12,14 +12,14 @@ export default async function Home({ searchParams }: { searchParams: { [key: str
 
   const [tokens, topTokens] = await Promise.all([
     db.query.tokens.findMany({
-      where: (tokens, { isNotNull, and, ilike }) =>
-        searchParams.q ? and(isNotNull(tokens.address), ilike(tokens.name, `%${searchParams.q}%`)) : isNotNull(tokens.address),
+      where: (tokens, { eq, and, ilike }) =>
+        searchParams.q ? and(eq(tokens.confirmed, true), ilike(tokens.name, `%${searchParams.q}%`)) : eq(tokens.confirmed, true),
       orderBy: (tokens, { sql, desc }) => [
         validSort ? sql.raw(`${searchParams.sort.split(":")[0]} ${searchParams.sort.split(":")[1]}`) : desc(tokens.createdAt)
       ]
     }),
     db.query.tokens.findMany({
-      where: (tokens, { isNotNull }) => isNotNull(tokens.address),
+      where: (tokens, { eq }) => eq(tokens.confirmed, true),
       orderBy: (tokens, { desc }) => [desc(tokens.marketCap)],
       limit: 3
     })

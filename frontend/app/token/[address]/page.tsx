@@ -45,8 +45,8 @@ export default async function Token({ params }: { params: { address: string } })
         </div>
       )}
       <div className="grid grid-cols-1 gap-8 place-content-center lg:grid-cols-3 lg:gap-16">
-        <div className="lg:col-span-2 content-center">
-          <Link href="/" className="flex gap-4 ml-2 group w-fit">
+        <div className="lg:col-span-2 order-1 lg:order-none content-center">
+          <Link href="/" className="lg:flex gap-4 ml-2 group w-fit hidden ">
             <MoveLeft className="cursor-pointer transition-transform group-hover:-translate-x-2 mb-6" /> Home
           </Link>
           <div className="w-full border border-primary self-center border-solid  bg-black shadow-2xl relative">
@@ -54,14 +54,14 @@ export default async function Token({ params }: { params: { address: string } })
             <TradingViewChart data={chartData} />
           </div>
         </div>
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col  gap-8">
           <TradeBox token={token} />
           <Tokeninfo token={token} />
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 order-2 lg:order-none">
           <TokenActivity token={token} />
         </div>
-        <div>
+        <div className="order-3 lg:order-none">
           <TokenHolders token={token} />
         </div>
       </div>

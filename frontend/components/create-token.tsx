@@ -4,6 +4,17 @@ import React, { useMemo } from "react";
 import z from "zod";
 import Image from "next/image";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -14,7 +25,7 @@ import { saveToken } from "@/app/actions";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
 import { writeContract, waitForTransactionReceipt, WriteContractErrorType, simulateContract } from "@wagmi/core";
-import { writeContracts, getCallsStatus } from "@wagmi/core/experimental";
+import { writeContracts } from "@wagmi/core/experimental";
 import MintManiaAbi from "@/abi/MintMania";
 import { contractAddresses } from "@/constants";
 import { useRouter } from "next/navigation";
@@ -82,6 +93,7 @@ export default function CreateToken() {
   const [hasSocials, setHasSocials] = React.useState(false);
   const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
   const isCoinbaseWallet = useMemo(() => connector?.type === "coinbaseWallet", [connector]);
+  const [gaslessDialogOpen, setGaslessDialogOpen] = React.useState(false);
   const [error, setError] = React.useState("");
   const imageRef = form.register("image");
 
@@ -150,8 +162,32 @@ export default function CreateToken() {
     return URL.createObjectURL(form.getValues().image[0]);
   }
 
+  function openWalletModal() {
+    open({ view: "Connect" });
+  }
+
   return (
     <>
+      <AlertDialog open={gaslessDialogOpen} onOpenChange={(open) => setGaslessDialogOpen(open)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Go Gas-Free with Coinbase Wallet!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Mint Mania will cover the first 10 transaction fees for you! By connecting your Coinbase Wallet, you can create tokens without needing
+              any ETH in your wallet. Enjoy a seamless, gas-free experience.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-black text-xl rounded-none bg-red-300">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={openWalletModal}
+              className="rounded-none text-center text-2xl cursor-pointer hover:bg-primary text-green-900 transition flex items-center justify-center"
+            >
+              Connect Coinbase Wallet
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <section className="w-full mx-auto px-4 sm:px-6 duration-500 transition-transform lg:px-8" id="services">
         <div className="w-fit mt-4 mx-auto">
           <div className="w-full flex items-center px-16 md:px-28 flex-col justify-center  border border-solid border-primary bg-black  p-6 gap-4 shadow-2xl relative">
@@ -301,7 +337,7 @@ export default function CreateToken() {
                       {waitingForTransaction ? "Creating Token..." : `Create Token ${isCoinbaseWallet ? "with Zero Gas" : ""}`}
                     </button>
                     {!isCoinbaseWallet && (
-                      <button type="button" className="bg-transparent text-yellow-300">
+                      <button type="button" onClick={() => setGaslessDialogOpen(true)} className="bg-transparent text-yellow-300">
                         Got No ETH? Go Gas-less
                       </button>
                     )}
