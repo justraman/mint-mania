@@ -8,9 +8,9 @@ MintMania lets you create and trade ERC20 tokens on the Base blockchain. Inspire
 
 ## Getting Started
 
-Mint USDT at https://sepolia.basescan.org/token/0x323e78f944A9a1FcF3a10efcC5319DBb0bB6e673#readContract
+Mint Sepolia USDT at https://sepolia.basescan.org/token/0x323e78f944A9a1FcF3a10efcC5319DBb0bB6e673#readContract
 
-MintMania at https://sepolia.basescan.org/address/0x349F29C5Ff84a297BBa9F046d09d2264b0Bb9c15#readContract
+MintMania Contract https://sepolia.basescan.org/address/0x349F29C5Ff84a297BBa9F046d09d2264b0Bb9c15#readContract
 
 
 ## Roadmap
@@ -19,13 +19,14 @@ MintMania at https://sepolia.basescan.org/address/0x349F29C5Ff84a297BBa9F046d09d
 - [x] Create token sale
 - [x] Create token trading
 - [x] Add token trading history
+- [x] Add websocket support
+- [x] Coinbase Paymaster integration
+- [x] Improve UI/UX
 - [ ] Add liquidity to Uniswap
 - [ ] Add candlestick chart
 - [ ] Launch on Mainnet
 - [ ] Add Bubble chart for holders
-- [ ] Improve UI/UX
 - [ ] Community chat on token page
-- [ ] Native token and USDC as collateral
 
 
 
