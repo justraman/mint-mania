@@ -20,7 +20,11 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
       if (events.TokenCreated.is(lg)) {
         console.log("TokenCreated", events.TokenCreated.decode(lg).name);
 
-        const token = await ctx.store.findOneByOrFail(Tokens, { txHash: lg.transaction!.hash });
+        const token = await ctx.store.findOneBy(Tokens, { txHash: lg.transaction!.hash });
+        if (!token) {
+          console.log("Token not found", lg.transaction!.hash);
+          continue;
+        }
         token.address = events.TokenCreated.decode(lg).token;
         token.confirmed = true;
         await ctx.store.upsert(token);

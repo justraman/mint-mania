@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import z from "zod";
 import Image from "next/image";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
@@ -14,6 +14,7 @@ import { saveToken } from "@/app/actions";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
 import { writeContract, waitForTransactionReceipt, WriteContractErrorType, simulateContract } from "@wagmi/core";
+import { writeContracts, getCallsStatus } from "@wagmi/core/experimental";
 import MintManiaAbi from "@/abi/MintMania";
 import { contractAddresses } from "@/constants";
 import { useRouter } from "next/navigation";
@@ -74,12 +75,13 @@ export default function CreateToken() {
     }
   });
 
-  const { isConnected } = useAccount();
+  const { isConnected, connector, address } = useAccount();
   const { open } = useWeb3Modal();
   const router = useRouter();
 
   const [hasSocials, setHasSocials] = React.useState(false);
   const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
+  const isCoinbaseWallet = useMemo(() => connector?.type === "coinbaseWallet", [connector]);
   const [error, setError] = React.useState("");
   const imageRef = form.register("image");
 
@@ -90,23 +92,58 @@ export default function CreateToken() {
 
     try {
       setWaitingForTransaction(true);
-      const { request } = await simulateContract(config, {
-        abi: MintManiaAbi.abi,
-        address: contractAddresses,
-        functionName: "create",
-        args: [data.tokenName, data.tokenSymbol, imageUri]
-      });
+      let hash: `0x${string}`;
+      if (isCoinbaseWallet) {
+        // pay via paymaster
+        const callHash = await writeContracts(config, {
+          account: address,
+          contracts: [
+            {
+              abi: MintManiaAbi.abi,
+              address: contractAddresses,
+              functionName: "create",
+              args: [data.tokenName, data.tokenSymbol, imageUri]
+            }
+          ],
+          capabilities: {
+            paymasterService: {
+              url: process.env.NEXT_PUBLIC_PAYMASTER_URL
+            }
+          }
+        });
 
-      const hash = await writeContract(config, request);
+        // wait for 5 seconds
+
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const callStatus = await getCallsStatus(config, {
+          id: callHash
+        });
+
+        const eventHash = callStatus.receipts?.at(0)?.blockHash;
+        if (!eventHash || callStatus.status === "PENDING") {
+          throw new Error("eventHash is null or call is still pending");
+        }
+
+        hash = eventHash;
+      } else {
+        const { request } = await simulateContract(config, {
+          abi: MintManiaAbi.abi,
+          address: contractAddresses,
+          functionName: "create",
+          args: [data.tokenName, data.tokenSymbol, imageUri]
+        });
+
+        hash = await writeContract(config, request);
+        await waitForTransactionReceipt(config, {
+          hash
+        });
+      }
 
       const formData = new FormData();
       formData.append("file", data.image[0]);
       formData.append("data", JSON.stringify({ ...data, image: undefined, imageUri: imageUri, txHash: hash }));
       const token = await saveToken(formData);
-
-      await waitForTransactionReceipt(config, {
-        hash
-      });
 
       // redirect to token page
 
@@ -271,14 +308,20 @@ export default function CreateToken() {
                     {hasSocials ? <X size={16} /> : <Plus size={16} />}
                     {hasSocials ? "Hide" : "Add"} Socials
                   </Button>
-
-                  <button
-                    type="submit"
-                    disabled={waitingForTransaction}
-                    className="p-2 px-14 border-[1px] border-primary text-primary text-center mt-4 text-lg cursor-pointer hover:bg-primary hover:text-green-900"
-                  >
-                    {waitingForTransaction ? "Creating Token..." : "Create Token"}
-                  </button>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <button
+                      type="submit"
+                      disabled={waitingForTransaction}
+                      className="p-2 px-14 border-[1px] border-primary text-primary text-center text-lg cursor-pointer hover:bg-primary hover:text-green-900"
+                    >
+                      {waitingForTransaction ? "Creating Token..." : `Create Token ${isCoinbaseWallet ? "with Zero Gas" : ""}`}
+                    </button>
+                    {!isCoinbaseWallet && (
+                      <button type="button" className="bg-transparent text-yellow-300">
+                        Got No ETH? Go Gas-less
+                      </button>
+                    )}
+                  </div>
                 </div>
               </form>
             </Form>

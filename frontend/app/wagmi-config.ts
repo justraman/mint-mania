@@ -25,6 +25,7 @@ export const config = defaultWagmiConfig({
     email: true,
     socials: ["google", "github", "discord"]
   },
+  coinbasePreference: "all",
   ssr: true,
   storage: createStorage({
     storage: cookieStorage

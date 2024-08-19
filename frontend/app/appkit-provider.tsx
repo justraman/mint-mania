@@ -17,10 +17,11 @@ createWeb3Modal({
   themeMode: 'dark',
   enableSwaps: false,
   projectId,
+  allowUnsupportedChain: false,
   enableAnalytics: true,
   themeVariables: {
     '--w3m-color-mix': '#3e804f',
-    '--w3m-color-mix-strength': 40,
+    '--w3m-color-mix-strength': 50,
     '--w3m-border-radius-master': '0'
   }
 });
