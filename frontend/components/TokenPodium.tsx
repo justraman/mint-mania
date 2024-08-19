@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import type { tokens as Token } from "@/db/schema";
+import type { tokens as Token } from "@/db/drizzle/schema";
 import RetroGrid from "@/components/magicui/retro-grid";
 import Link from "next/link";
 

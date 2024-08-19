@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import type { tokens } from "@/db/schema";
+import type { tokens } from "@/db/drizzle/schema";
 import BigNumber from "bignumber.js";
 import { contractAddresses, usdtContractAddress } from "@/constants";
 import { formatUnits, parseUnits } from "viem";

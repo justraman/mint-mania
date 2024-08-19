@@ -42,8 +42,8 @@ export class Tokens {
     @BooleanColumn_({nullable: false})
     confirmed!: boolean
 
-    @StringColumn_({nullable: false})
-    txHash!: string
+    @StringColumn_({nullable: true})
+    txHash!: string | undefined | null
 
     @BigIntColumn_({nullable: false})
     marketCap!: bigint

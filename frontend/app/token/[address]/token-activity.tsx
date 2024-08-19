@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { db } from "@/db";
-import type { tokens } from "@/db/schema";
+import type { tokens } from "@/db/drizzle/schema";
 import { shortenAddress } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
 

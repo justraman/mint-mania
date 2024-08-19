@@ -22,7 +22,7 @@ type Tokens @entity {
   website: String
   createdAt: DateTime!
   confirmed: Boolean!
-  txHash: String!
+  txHash: String
   marketCap: BigInt!
   holders: [Holders!]! @derivedFrom(field: "token")
   trades: [Trades!]! @derivedFrom(field: "token")

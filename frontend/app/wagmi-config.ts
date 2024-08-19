@@ -2,6 +2,8 @@ import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
 
 import { cookieStorage, createStorage, http } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
+import { ENTRYPOINT_ADDRESS_V06 } from "permissionless";
+import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 
 // Get projectId from https://cloud.walletconnect.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;

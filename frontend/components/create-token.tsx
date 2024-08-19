@@ -94,8 +94,7 @@ export default function CreateToken() {
       setWaitingForTransaction(true);
       let hash: `0x${string}`;
       if (isCoinbaseWallet) {
-        // pay via paymaster
-        const callHash = await writeContracts(config, {
+        await writeContracts(config, {
           account: address,
           contracts: [
             {
@@ -111,21 +110,6 @@ export default function CreateToken() {
             }
           }
         });
-
-        // wait for 5 seconds
-
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        const callStatus = await getCallsStatus(config, {
-          id: callHash
-        });
-
-        const eventHash = callStatus.receipts?.at(0)?.blockHash;
-        if (!eventHash || callStatus.status === "PENDING") {
-          throw new Error("eventHash is null or call is still pending");
-        }
-
-        hash = eventHash;
       } else {
         const { request } = await simulateContract(config, {
           abi: MintManiaAbi.abi,
@@ -135,6 +119,7 @@ export default function CreateToken() {
         });
 
         hash = await writeContract(config, request);
+
         await waitForTransactionReceipt(config, {
           hash
         });
@@ -142,12 +127,11 @@ export default function CreateToken() {
 
       const formData = new FormData();
       formData.append("file", data.image[0]);
-      formData.append("data", JSON.stringify({ ...data, image: undefined, imageUri: imageUri, txHash: hash }));
+      formData.append("data", JSON.stringify({ ...data, image: undefined, imageUri: imageUri }));
       const token = await saveToken(formData);
+      router.push(`/token/${token.id}`);
 
       // redirect to token page
-
-      router.push(`/token/${token.id}`);
     } catch (error: any) {
       let typedError = error as WriteContractErrorType;
       if (typedError.name === "ContractFunctionExecutionError") {

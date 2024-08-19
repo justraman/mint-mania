@@ -22,7 +22,7 @@ export const tokens = pgTable("tokens", {
 	website: text("website"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
 	confirmed: boolean("confirmed").notNull(),
-	txHash: text("tx_hash").notNull(),
+	txHash: text("tx_hash"),
 	marketCap: numeric("market_cap").notNull(),
 },
 (table) => {

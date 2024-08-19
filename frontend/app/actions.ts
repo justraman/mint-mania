@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { tokens } from "@/db/schema";
+import { tokens } from "@/db/drizzle/schema";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
 
@@ -40,7 +40,6 @@ export async function saveToken(formData: FormData) {
       id: randomUUID(),
       name: data.tokenName,
       symbol: data.tokenSymbol.toUpperCase(),
-      txHash: data.txHash,
       image: data.imageUri,
       twitter: data.twitter,
       telegram: data.telegram,

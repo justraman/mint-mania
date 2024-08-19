@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { Progress } from "@/components/ui/progress";
-import { tokens } from "@/db/schema";
+import { tokens } from "@/db/drizzle/schema";
 import { Globe } from "lucide-react";
 import Erc20Abi from "@/abi/Erc20";
 import Image from "next/image";

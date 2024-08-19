@@ -18,17 +18,18 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
     for (let lg of c.logs) {
       // decode and normalize the tx data
       if (events.TokenCreated.is(lg)) {
-        console.log("TokenCreated", events.TokenCreated.decode(lg).name);
+        console.log("TokenCreated", events.TokenCreated.decode(lg).name, lg.transaction);
 
-        let token = await ctx.store.findOneBy(Tokens, { txHash: lg.transaction!.hash });
-        if (!token) {
-          // wait 2 seconds for the token to be confirmed
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          token = await ctx.store.findOneByOrFail(Tokens, { txHash: lg.transaction!.hash });
-          continue;
+        const contract = new Contract(ctx, lg.block, lg.address);
+        const tokenBc = await contract.getToken(events.TokenSold.decode(lg).token);
+
+        if (!tokenBc._2) {
+          throw new Error("Token not found on blockchain");
         }
-
+        // i know we shouldn't use image as id, but it's a hackathon project :)
+        const token = await ctx.store.findOneByOrFail(Tokens, { image: tokenBc._2 });
         token.address = events.TokenCreated.decode(lg).token;
+        token.txHash = lg.transaction!.hash;
         token.confirmed = true;
         await ctx.store.upsert(token);
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Search from "./Search";
 import Image from "next/image";
-import type { tokens as Token } from "@/db/schema";
+import type { tokens as Token } from "@/db/drizzle/schema";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 

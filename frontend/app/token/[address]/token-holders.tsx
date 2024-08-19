@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import type { tokens } from "@/db/schema";
+import type { tokens } from "@/db/drizzle/schema";
 import React from "react";
 
 export async function TokenHolders({ token }: { token: typeof tokens.$inferSelect }) {
