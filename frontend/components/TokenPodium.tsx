@@ -29,7 +29,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
                   height={96}
                   src={`https://mintmania.s3.us-east-1.amazonaws.com/tokens/${tokens[1].image}`}
                   alt={tokens[1].name}
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover rounded-full hover:scale-110 transition-transform duration-200"
                 />
               </div>
             </Link>
@@ -48,7 +48,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
                   height={128}
                   src={`https://mintmania.s3.us-east-1.amazonaws.com/tokens/${tokens[0].image}`}
                   alt={tokens[0].name}
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover rounded-full hover:scale-110 transition-transform duration-200"
                 />
               </div>
             </Link>
@@ -67,7 +67,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
                   height={80}
                   src={`https://mintmania.s3.us-east-1.amazonaws.com/tokens/${tokens[2].image}`}
                   alt={tokens[2].name}
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover rounded-full hover:scale-110 transition-transform duration-200"
                 />
               </div>
             </Link>

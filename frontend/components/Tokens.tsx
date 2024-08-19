@@ -87,7 +87,7 @@ export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)
                       height={144}
                       src={`https://mintmania.s3.us-east-1.amazonaws.com/tokens/${token.image}`}
                       alt={token.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full hover:scale-110 transition-transform duration-200 object-cover"
                     />
                   </div>
                   <h3 className="mt-0.5 text-2xl font-medium text-white text-center break-words">{token.name}</h3>
