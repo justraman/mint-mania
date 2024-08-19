@@ -34,7 +34,10 @@ export default async function Token({ params }: { params: { address: string } })
     limit: 2000
   });
 
-  const chartData = allTrades.map((trade) => ({ time: new Date(trade.time).getTime() / 1000, value: trade.price, label: trade.price / 1000_000 }));
+  let chartData = allTrades.map((trade) => ({ time: new Date(trade.time).getTime() / 1000, value: trade.price, label: trade.price / 1000_000 }));
+  if (chartData.length === 0) {
+    chartData = [{ time: new Date(token.createdAt).getTime() / 1000, value: 13, label: 13 / 1000_000 }];
+  }
 
   return (
     <section className="mx-auto container px-6 lg:px-8 mb-10 mt-10" id="services">
