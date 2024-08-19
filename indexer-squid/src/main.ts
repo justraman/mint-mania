@@ -29,6 +29,8 @@ processor.run(new TypeormDatabase({ supportHotBlocks: true }), async (ctx) => {
         // i know we shouldn't use image as id, but it's a hackathon project :)
         const token = await ctx.store.findOneByOrFail(Tokens, { image: tokenBc._2 });
         token.address = events.TokenCreated.decode(lg).token;
+        token.name = tokenBc._0;
+        token.symbol = tokenBc._1;
         token.txHash = lg.transaction!.hash;
         token.confirmed = true;
         await ctx.store.upsert(token);
