@@ -1,6 +1,6 @@
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
 
-import { cookieStorage, createStorage } from "wagmi";
+import { cookieStorage, createStorage, http } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 
 // Get projectId from https://cloud.walletconnect.com
@@ -26,6 +26,9 @@ export const config = defaultWagmiConfig({
     socials: ["google", "github", "discord"]
   },
   coinbasePreference: "all",
+  transports: {
+    [baseSepolia.id]: http(process.env.NEXT_PUBLIC_RPC_ETH_HTTP)
+  },
   ssr: true,
   storage: createStorage({
     storage: cookieStorage
