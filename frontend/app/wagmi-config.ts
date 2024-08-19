@@ -27,7 +27,7 @@ export const config = defaultWagmiConfig({
     email: true,
     socials: ["google", "github", "discord"]
   },
-  coinbasePreference: "all",
+  coinbasePreference: "smartWalletOnly",
   transports: {
     [baseSepolia.id]: http(process.env.NEXT_PUBLIC_RPC_ETH_HTTP)
   },
