@@ -15,18 +15,21 @@ MintMania Contract https://sepolia.basescan.org/address/0x349F29C5Ff84a297BBa9F0
 
 ## Roadmap
 
-- [x] Create bonding curve
-- [x] Create token sale
-- [x] Create token trading
-- [x] Add token trading history
-- [x] Add websocket support
-- [x] Coinbase Paymaster integration
-- [x] Improve UI/UX
-- [ ] Add liquidity to Uniswap
-- [ ] Add candlestick chart
-- [ ] Launch on Mainnet
-- [ ] Add Bubble chart for holders
-- [ ] Community chat on token page
+- **Completed**
+  - ✅ Create bonding curve
+  - ✅ Create token sale
+  - ✅ Create token trading
+  - ✅ Add token trading history
+  - ✅ Add WebSocket support
+  - ✅ Integrate Coinbase Paymaster
+  - ✅ Improve UI/UX
+
+- **In Progress**
+  - 🟡 Add liquidity to Uniswap
+  - 🟡 Add candlestick chart
+  - 🟡 Launch on Mainnet
+  - 🟡 Add bubble chart for holders
+  - 🟡 Introduce community chat on token page
 
 
 

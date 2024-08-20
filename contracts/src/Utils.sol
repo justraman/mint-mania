@@ -18,20 +18,26 @@ contract Utils {
     }
 
     function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        uint256 z = _x + _y;
-        assert(z >= _x, "SafeMath: addition overflow");
-        return z;
+        unchecked {
+            uint256 z = _x + _y;
+            require(z >= _x, "SafeMath: addition overflow");
+            return z;
+        }
     }
 
     function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        assert(_x >= _y, "SafeMath: subtraction underflow");
-        return _x - _y;
+        require(_x >= _y, "SafeMath: subtraction underflow");
+        unchecked {
+            return _x - _y;
+        }
     }
 
     function safeMul(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        assert(_x == 0);
-        uint256 z = _x * _y;
-        assert(z / _x == _y, "SafeMath: multiplication overflow");
-        return z;
+        require(_x != 0);
+        unchecked {
+            uint256 z = _x * _y;
+            require(z / _x == _y, "SafeMath: multiplication overflow");
+            return z;
+        }
     }
 }
