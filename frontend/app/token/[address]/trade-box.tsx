@@ -63,11 +63,29 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
       .max(50000_000_000)
       .refine((value) => !isNaN(value), { message: "Invalid number" })
       .refine((value) => value > 0, { message: "Amount must be greater than 0" })
-      .refine((value) => selectedButton === "sell" || (usdtBalance.data && parseUnits(value.toString(), 6) <= usdtBalance.data), {
-        message: "Insufficient USDT balance"
-      })
-      .refine((value) => selectedButton === "buy" || (tokenBalance.data && BigInt(value) <= tokenBalance.data), {
-        message: "Insufficient Token  balance"
+      .superRefine((value, ctx) => {
+        if (selectedButton === "sell") {
+          if (!Number.isInteger(value)) {
+            return ctx.addIssue({
+              message: "Amount must be an integer",
+              code: z.ZodIssueCode.custom
+            });
+          }
+
+          if (tokenBalance.data && BigInt(value) > tokenBalance.data) {
+            return ctx.addIssue({
+              message: "Insufficient token balance",
+              code: z.ZodIssueCode.custom
+            });
+          }
+        } else {
+          if (usdtBalance.data && parseUnits(value.toString(), 6) > usdtBalance.data) {
+            return ctx.addIssue({
+              message: "Insufficient USDT balance",
+              code: z.ZodIssueCode.custom
+            });
+          }
+        }
       })
   });
 
@@ -280,6 +298,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   useEffect(() => {
     setEstimateTokenValue(undefined);
     setEstimateUsdtValue(undefined);
+    setError("");
 
     if (form.formState.errors.amount) return;
 
