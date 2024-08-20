@@ -15,7 +15,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
       <RetroGrid className="absolute inset-0 z-[-1]" />
 
       <div className="flex flex-col items-center z-10">
-        <h2 className="font-bold text-4xl tracking-wide text-center mb-8">
+        <h2 className="font-bold text-4xl tracking-wide text-center my-8">
           The <span className="text-primary">Top 3</span>
         </h2>
 

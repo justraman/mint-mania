@@ -65,7 +65,7 @@ export default function Tokens({ tokens }: { tokens: (typeof Token.$inferSelect)
   return (
     <>
       <Search onQuery={onQuery} query={query} />
-      <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10" id="services">
+      <section className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 mb-10">
         <div className="flex justify-start mb-4">
           <select className="bg-black text-white p-3" value={sortCriteria} onChange={(e) => onSort(e.target.value)}>
             <option value="name:asc">A-Z</option>
