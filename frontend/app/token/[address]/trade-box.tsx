@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import type { tokens } from "@/db/drizzle/schema";
 import BigNumber from "bignumber.js";
 import { contractAddresses, usdtContractAddress } from "@/constants";
@@ -25,6 +26,9 @@ import debounce from "lodash/debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { pusher } from "@/pusher";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function formatUSDT(value: bigint | undefined) {
   if (!value) return "0.0";
@@ -36,12 +40,6 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   const { open } = useWeb3Modal();
   const account = useAccount();
   const router = useRouter();
-  const [inputValue, setInputValue] = useState("");
-  const [error, setError] = React.useState("");
-  const [allowanceDialogOpen, setAllowanceDialogOpen] = React.useState(false);
-  const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
-  const [estimateTokenValue, setEstimateTokenValue] = useState<bigint | undefined>(undefined);
-  const [estimateUsdtValue, setEstimateUsdtValue] = useState<bigint | undefined>(undefined);
 
   const { toast } = useToast();
   const usdtBalance = useReadContract({
@@ -51,28 +49,60 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
     args: [account.address ?? "0x"]
   });
 
-  const calculateEstimated = async () => {
-    if (!inputValue) return;
+  const [error, setError] = React.useState("");
+  const [allowanceDialogOpen, setAllowanceDialogOpen] = React.useState(false);
+  const [waitingForTransaction, setWaitingForTransaction] = React.useState(false);
+  const [estimateTokenValue, setEstimateTokenValue] = useState<bigint | undefined>(undefined);
+  const [estimateUsdtValue, setEstimateUsdtValue] = useState<bigint | undefined>(undefined);
+
+  const validation = z.object({
+    amount: z.coerce
+      .number()
+      .nonnegative()
+      .min(0.01)
+      .max(50000_000_000)
+      .refine((value) => !isNaN(value), { message: "Invalid number" })
+      .refine((value) => value > 0, { message: "Amount must be greater than 0" })
+      .refine((value) => selectedButton === "sell" || (usdtBalance.data && parseUnits(value.toString(), 6) <= usdtBalance.data), {
+        message: "Insufficient USDT balance"
+      })
+      .refine((value) => selectedButton === "buy" || (tokenBalance.data && BigInt(value) <= tokenBalance.data), {
+        message: "Insufficient Token  balance"
+      })
+  });
+
+  const form = useForm<z.input<typeof validation>>({
+    resolver: zodResolver(validation),
+    defaultValues: {
+      amount: undefined
+    },
+    mode: "all"
+  });
+
+  const calculateEstimated = async (amount: number) => {
     if (!token.address) return;
 
     try {
       if (selectedButton === "buy") {
-        const value = parseUnits(inputValue, 6);
+        const value = parseUnits(amount.toString(), 6);
         const estimate = await readContract(config, {
           abi: MintMania.abi,
           address: contractAddresses,
           functionName: "calculateTokenReturn",
           args: [token.address as `0x${string}`, value]
         });
+        if (form.formState.errors.amount) return;
         setEstimateTokenValue(estimate);
       } else {
-        const value = parseUnits(inputValue, 0);
+        const value = BigInt(amount);
         const estimate = await readContract(config, {
           abi: MintMania.abi,
           address: contractAddresses,
           functionName: "calculateSaleReturn",
           args: [token.address as `0x${string}`, value]
         });
+        if (form.formState.errors.amount) return;
+
         setEstimateUsdtValue(estimate);
       }
     } catch (error) {
@@ -83,7 +113,8 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   useEffect(() => {
     setEstimateTokenValue(undefined);
     setEstimateUsdtValue(undefined);
-  }, [selectedButton]);
+    form.clearErrors();
+  }, [selectedButton, form]);
 
   const tokenBalance = useReadContract({
     abi: Erc20Abi,
@@ -94,9 +125,9 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
 
   const setMax = () => {
     if (selectedButton === "buy" && usdtBalance.data) {
-      setInputValue(formatUnits(usdtBalance.data, 6));
+      form.setValue("amount", Number(formatUnits(usdtBalance.data, 6)));
     } else {
-      setInputValue(tokenBalance.data ? formatUnits(tokenBalance.data, 0) : "0");
+      form.setValue("amount", tokenBalance.data ? Number(formatUnits(tokenBalance.data, 0)) : 0);
     }
   };
 
@@ -151,15 +182,13 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
     return true;
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue) return;
+  const onSubmit = async (values: z.output<typeof validation>) => {
     if (!account.isConnected) return open({ view: "Connect" });
     setError("");
     try {
       setWaitingForTransaction(true);
       if (selectedButton === "buy") {
-        const value = parseUnits(inputValue, 6);
+        const value = parseUnits(values.amount.toString(), 6);
         const hasAllowance = await checkAlowance(value);
 
         if (!hasAllowance) {
@@ -186,7 +215,7 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
         usdtBalance.refetch();
         tokenBalance.refetch();
       } else {
-        const value = BigInt(inputValue);
+        const value = BigInt(values.amount);
         const { request } = await simulateContract(config, {
           abi: MintMania.abi,
           address: contractAddresses,
@@ -251,11 +280,14 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
   useEffect(() => {
     setEstimateTokenValue(undefined);
     setEstimateUsdtValue(undefined);
+
+    if (form.formState.errors.amount) return;
+
     const debouncedCalculateEstimated = debounce(calculateEstimated, 1000);
-    debouncedCalculateEstimated();
+    debouncedCalculateEstimated(form.watch("amount"));
     return debouncedCalculateEstimated.cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue]);
+  }, [form.watch("amount"), selectedButton]);
 
   return (
     <>
@@ -301,55 +333,65 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
               Sell
             </button>
           </div>
-          <form onSubmit={onSubmit}>
-            <div className="flex flex-col gap-4">
-              <div>
-                <div className="flex relative h-10 items-center">
-                  <button
-                    onClick={setMax}
-                    className="!absolute cursor-pointer right-1 top-1 z-10 select-none rounded bg-secondary py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md transition-all hover:shadow-lg focus:shadow-none active:shadow-none peer-placeholder-shown:pointer-events-none peer-placeholder-shown:bg-blue-gray-500 peer-placeholder-shown:shadow-none"
-                    type="button"
-                    data-ripple-light="true"
-                  >
-                    max
-                  </button>
-                  <Input
-                    className="text-black font-bold peer h-full w-full rounded-[7px] border pr-20 font-sans text-sm  outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
-                    placeholder="0.0"
-                    type="number"
-                    required
-                    value={inputValue}
-                    max={50000_000_000}
-                    onChange={(e) => (Number(e.target.value) < 50000_000_000 ? setInputValue(e.target.value) : "")}
-                    step="0.01"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex relative h-10 items-center">
+                          <button
+                            onClick={setMax}
+                            className="!absolute cursor-pointer right-1 top-1 z-10 select-none rounded bg-secondary py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md transition-all hover:shadow-lg focus:shadow-none active:shadow-none peer-placeholder-shown:pointer-events-none peer-placeholder-shown:bg-blue-gray-500 peer-placeholder-shown:shadow-none"
+                            type="button"
+                            data-ripple-light="true"
+                          >
+                            max
+                          </button>
+                          <Input
+                            className="text-black font-bold peer h-full w-full rounded-[7px] border pr-20 font-sans text-sm  outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
+                            placeholder="0.0"
+                            type="number"
+                            required
+                            {...field}
+                            max={50000_000_000}
+                            step="0.01"
+                          />
+                          <label className="pointer-events-none absolute right-28  flex w-auto  select-none text-lg pleading-tight text-black ">
+                            {selectedButton == "buy" ? "USDT" : token.symbol}
+                          </label>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <label className="pointer-events-none absolute right-28  flex w-auto  select-none text-lg pleading-tight text-black ">
-                    {selectedButton == "buy" ? "USDT" : token.symbol}
-                  </label>
-                </div>
 
-                {estimateTokenValue && (
-                  <div className="text-md mt-1 ml-3 font-sans lowercase">
-                    {Intl.NumberFormat().format(estimateTokenValue)} <span className="uppercase font-['TheFountainOfWishes']">{token.symbol}</span>
-                  </div>
-                )}
-                {estimateUsdtValue && (
-                  <div className="text-md mt-1 ml-3 font-sans lowercase">
-                    {Intl.NumberFormat().format(Number(estimateUsdtValue) / 1000_000)}{" "}
-                    <span className="uppercase font-['TheFountainOfWishes']">USDT</span>
-                  </div>
-                )}
+                  {estimateTokenValue && (
+                    <div className="text-md mt-1 ml-3 font-sans lowercase">
+                      {Intl.NumberFormat().format(estimateTokenValue)} <span className="uppercase font-['TheFountainOfWishes']">{token.symbol}</span>
+                    </div>
+                  )}
+                  {estimateUsdtValue && (
+                    <div className="text-md mt-1 ml-3 font-sans lowercase">
+                      {Intl.NumberFormat().format(Number(estimateUsdtValue) / 1000_000)}{" "}
+                      <span className="uppercase font-['TheFountainOfWishes']">USDT</span>
+                    </div>
+                  )}
+                </div>
+                {error && <p className="text-red-500 text-center mx-auto max-w-56 break-all">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={token.confirmed === false || waitingForTransaction === true}
+                  className="p-3 disabled:bg-gray-300 disabled:border-none disabled:text-black border-[1px] border-primary text-primary w-full text-center text-2xl cursor-pointer hover:bg-primary hover:text-green-900 transition flex items-center justify-center"
+                >
+                  {token.confirmed === false ? "Token is being indexed..." : "Place Trade"}
+                </button>
               </div>
-              {error && <p className="text-red-500 text-center mx-auto max-w-56 break-all">{error}</p>}
-              <button
-                type="submit"
-                disabled={token.confirmed === false || waitingForTransaction === true}
-                className="p-3 disabled:bg-gray-300 disabled:border-none disabled:text-black border-[1px] border-primary text-primary w-full text-center text-2xl cursor-pointer hover:bg-primary hover:text-green-900 transition flex items-center justify-center"
-              >
-                {token.confirmed === false ? "Token is being indexed..." : "Place Trade"}
-              </button>
-            </div>
-          </form>
+            </form>
+          </Form>
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span>

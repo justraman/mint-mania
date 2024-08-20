@@ -110,7 +110,7 @@ body {
   .scale-y-in {
     transform: scaleY(0);
     transform-origin: bottom;
-    animation: scaleYAnimation 1s ease-out forwards;
+    animation: scaleYAnimation 0.5s ease-out forwards;
   }
 
   @keyframes scaleYAnimation {

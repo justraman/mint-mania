@@ -19,7 +19,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
           The <span className="text-primary">Top 3</span>
         </h2>
 
-        <div className="flex justify-center h-full items-end gap-2 md:gap-8">
+        <div className="flex justify-center h-full scale-y-in items-end gap-2 md:gap-8">
           {/* Second Place - Silver */}
           <div className="flex flex-col items-center">
             <Link href={`/token/${tokens[1].address}`}>
@@ -34,13 +34,13 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
               </div>
             </Link>
             <h3 className="text-xl font-semibold text-center text-white mt-2">{tokens[1].symbol}</h3>
-            <div className="bg-[#D3D3D3] relative flex items-center justify-center w-20 md:w-28 scale-y-in h-40 mt-4 text-center">
+            <div className="bg-[#D3D3D3] relative flex items-center justify-center w-20 md:w-28 h-40 mt-4 text-center">
               <p className="text-black text-5xl font-bold">2</p>
             </div>
           </div>
 
           {/* First Place - Gold */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center scale-y-in">
             <Link href={`/token/${tokens[0].address}`}>
               <div className="h-24 w-24 flex items-center justify-center">
                 <Image
@@ -53,13 +53,13 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
               </div>
             </Link>
             <h3 className="text-xl font-semibold text-center text-white mt-2">{tokens[0].symbol}</h3>
-            <div className="bg-[#FFD700] flex items-center justify-center transition-all w-20 md:w-28 scale-y-in h-56 mt-4 text-center">
+            <div className="bg-[#FFD700] flex items-center justify-center transition-all w-20 md:w-28 h-56 mt-4 text-center">
               <p className="text-black text-5xl font-bold">1</p>
             </div>
           </div>
 
           {/* Third Place - Bronze */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center scale-y-in">
             <Link href={`/token/${tokens[2].address}`}>
               <div className="h-24 w-24 flex items-center justify-center">
                 <Image
@@ -72,7 +72,7 @@ export default function TokenPodium({ tokens }: { tokens: (typeof Token.$inferSe
               </div>
             </Link>
             <h3 className="text-xl font-semibold text-center text-white mt-2">{tokens[2].symbol}</h3>
-            <div className="bg-[#CD7F32] flex items-center justify-center w-20 md:w-28 scale-y-in h-28 mt-4 text-center">
+            <div className="bg-[#CD7F32] flex items-center justify-center w-20 md:w-28 h-28 mt-4 text-center">
               <p className="text-black text-5xl font-bold">3</p>
             </div>
           </div>
