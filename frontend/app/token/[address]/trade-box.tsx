@@ -72,14 +72,14 @@ export default function TradeBox({ token }: { token: typeof tokens.$inferSelect 
             });
           }
 
-          if (tokenBalance.data && BigInt(value) > tokenBalance.data) {
+          if (tokenBalance.data !== undefined && BigInt(value) > tokenBalance.data) {
             return ctx.addIssue({
               message: "Insufficient token balance",
               code: z.ZodIssueCode.custom
             });
           }
         } else {
-          if (usdtBalance.data && parseUnits(value.toString(), 6) > usdtBalance.data) {
+          if (usdtBalance.data !== undefined && parseUnits(value.toString(), 6) > usdtBalance.data) {
             return ctx.addIssue({
               message: "Insufficient USDT balance",
               code: z.ZodIssueCode.custom
